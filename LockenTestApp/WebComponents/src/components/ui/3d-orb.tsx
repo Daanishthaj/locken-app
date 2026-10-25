@@ -1,9 +1,12 @@
 "use client"
 
-// 3D Orb (from 21st.dev): a wireframe globe in a soft atmospheric glow, inside a slowly turning starfield. Adapted for
-// Locken's web views: no Tailwind (the page has none), the colours come from the app (the current tab's), no earth
-// textures (they aren't shipped, so the orb stays a wireframe), no "Drag to explore" hint (the dashboard stage doesn't
-// take drags), and Reduce Motion holds it still.
+// Based on the globe component from Supavec (https://github.com/supavec/supavec, apps/web/src/components/globe.tsx),
+// licensed under the Apache License, Version 2.0 (see LICENSES/Apache-2.0.txt); it is also shared on 21st.dev as
+// "3d orb" by vaib215.
+//
+// Modified for Locken (2026-10-25): no Tailwind (the page has none), the colours come from the app (the current tab's)
+// instead of a fixed palette, the earth textures and the "Drag to explore" hint are removed, the orb sizes to its frame
+// instead of the window, and Reduce Motion holds it still.
 
 import { useEffect, useRef } from "react"
 import * as THREE from "three"

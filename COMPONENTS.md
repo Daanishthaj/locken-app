@@ -15,7 +15,7 @@ Every UI component used in the Locken apps, what it is, where it came from, and 
 | 3 | ProfileCard | Web (React) | React Bits | Sidebar profile card with now-playing music | `LockenTestApp/WebComponents/src/ProfileCard.jsx` + `.css` |
 | 4 | JellyRadio | Web (React) | React Bits | Every single-choice picker (Canvas / My Own Goal, priority, etc.) | `LockenTestApp/WebComponents/src/JellyRadio.jsx` + `.css` |
 | 5 | CodeSlots | Web (React) | React Bits | 6-digit email / authenticator code entry | `LockenTestApp/WebComponents/src/CodeSlots.jsx` + `.css` |
-| 6 | 3D Orb | Web (React + three.js) | 21st.dev | Home hero orb | `LockenTestApp/WebComponents/src/components/ui/3d-orb.tsx` |
+| 6 | 3D Orb | Web (React + three.js) | Supavec (Apache-2.0) | Home hero orb | `LockenTestApp/WebComponents/src/components/ui/3d-orb.tsx` |
 | 7 | Menu bar padlock | SwiftUI | Locken's own | The menu bar timer's icon | `LockenTestApp/DesignSystem/LogoTraceLoader.swift` |
 | 8 | Papers transition | Plain HTML/CSS/JS | Your spec | Animation between session setup and the timer | `LockenTestApp/WebComponents/public/papers.html` |
 | 9 | BorderGlow | Native SwiftUI | React Bits port | Every button surface | `LockenTestApp/DesignSystem/SquircleTokens.swift` (`BorderGlowModifier`) |
@@ -207,10 +207,10 @@ import CodeSlots from './CodeSlots';
 
 SwiftUI wrapper: `CodeSlotsField` in `LockenTestApp/Views/ReactBitsWebView.swift`.
 
-### 6. 3D Orb (21st.dev)
+### 6. 3D Orb (Supavec's globe, Apache-2.0)
 
 A wireframe globe in a soft glow inside a slowly turning starfield (three.js), on a transparent background. Replaced
-OriginKit's plasma ring on 2026-10-25. Adapted from the 21st.dev component: no Tailwind, colours from the app, no earth
+OriginKit's plasma ring on 2026-10-25. Adapted from Supavec's globe component (also on 21st.dev as "3d orb"; Apache-2.0, see `LICENSES/Apache-2.0.txt`): no Tailwind, colours from the app, no earth
 textures (not shipped, so it stays a wireframe), no "Drag to explore" hint, and Reduce Motion holds it still. The page
 CSS fades the starfield toward the frame's edges so no square shows.
 

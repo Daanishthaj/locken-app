@@ -105,7 +105,7 @@ When asking for a new screen or a redesign, attach a screenshot of something you
 
 Sources already chosen for Locken:
 - React Bits (ElectricLogo, DitherVeil, ProfileCard, JellyRadio, CodeSlots, BorderGlow, MagicBento)
-- 21st.dev (3D Orb)
+- Supavec (3D Orb, Apache-2.0)
 - Aceternity UI (Text Generate Effect)
 - Apple Liquid Glass
 - The Local Flow site's liquid glass techniques

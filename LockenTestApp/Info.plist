@@ -17,11 +17,11 @@
 	<key>CFBundleShortVersionString</key>
 	<string>2.0.8</string>
 	<key>CFBundleVersion</key>
-	<string>57</string>
-	<key>LSMinimumSystemVersion</key>
-	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
+	<string>58</string>
 	<key>GoogleClassroomClientID</key>
 	<string></string>
+	<key>LSMinimumSystemVersion</key>
+	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>LockenTurnstileSiteKey</key>
 	<string></string>
 	<key>NSAppleEventsUsageDescription</key>
