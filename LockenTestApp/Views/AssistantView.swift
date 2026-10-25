@@ -90,7 +90,7 @@ struct AssistantView: View {
 
     // MARK: Hero
 
-    /// React Bits Strands, the aurora across the top of the page (the plasma ring stays on Home). It shows what the
+    /// React Bits Strands, the aurora across the top of the page (the 3D orb stays on Home). It shows what the
     /// assistant is doing: calm when idle, lifted while it thinks, following the student's voice while it listens, and
     /// moving like speech while Locken talks.
     private var hero: some View { AssistantAurora(assistant: assistant, meter: assistant.meter) }

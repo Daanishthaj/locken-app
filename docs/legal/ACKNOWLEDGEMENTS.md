@@ -26,7 +26,7 @@ Snell Roundhand and SF Symbols are part of macOS and are not bundled with Locken
 | Kokoro voice (the Assistant's voice): the Kokoro-82M model and voices, KokoroCoreML and BARTG2P | hexgrad (https://huggingface.co/hexgrad/Kokoro-82M); Jud (https://github.com/Jud/kokoro-coreml, https://github.com/Jud/swift-bart-g2p) | Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0) |
 | Hugeicons (free icons) | Hugeicons (https://hugeicons.com) | MIT |
 | DitherVeil, ElectricLogo, ProfileCard and GlassIcons (all also in the Windows app), JellyRadio, CodeSlots, LogoLoop and other effect components | React Bits by David Haz (https://reactbits.dev) | MIT + Commons Clause |
-| Plasma ring (Mac and Windows dashboards) | OriginKit, added with the official `originkit` CLI | OriginKit's terms for components added to your own projects |
+| 3D orb (Mac and Windows dashboards) | 3D Orb component from 21st.dev (https://21st.dev), adapted for Locken | As published on 21st.dev; built on three.js (MIT) |
 | Cursor, Google Chrome, Perplexity and Safari logos, and the Apple Music, YouTube, YouTube Music, SoundCloud, Claude, Gemini, Google, Arc and Brave marks on our website | Simple Icons (https://simpleicons.org) | CC0 1.0. The logos remain their owners' trademarks, and Locken isn't affiliated with or endorsed by them. |
 | Hero photograph behind the dither effect | Unsplash photo 1737071371043-761e02b1ef95 (https://unsplash.com) | Unsplash License (https://unsplash.com/license) |
 

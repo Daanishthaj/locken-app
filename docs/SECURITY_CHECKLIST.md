@@ -47,7 +47,7 @@ Check every item before shipping a build or merging a change to sign-in, data, t
 | Published DMG matches the current build | ✅ | The live `Locken.dmg` and `version.json` are the signed current Locken build (`com.locken.LockenTestApp`); checked by sha256 after every release |
 | Supabase leaked-password protection | ⚠️ | Needs the Pro plan; the Mac and Windows apps run their own Have I Been Pwned check |
 | Supabase "secure email change" and "secure password change" | ❓ | Check in the dashboard (Authentication → Providers → Email); not readable through the tools available here. The Test App's password change relies on "secure password change" to enforce its emailed code |
-| Licenses confirmed for every asset | ⚠️ | See `CREDITS.md`: the BubbledotICG font, the OriginKit plasma ring, the site's models and video, and `HumanBrain.usdz` |
+| Licenses confirmed for every asset | ⚠️ | See `CREDITS.md`: the BubbledotICG font, the 21st.dev 3D orb, the site's models and video, and `HumanBrain.usdz` |
 
 ## Common vibe-coding holes (checked 2026-10-19)
 

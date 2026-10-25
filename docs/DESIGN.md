@@ -27,7 +27,7 @@ Never do any of these:
 - Add sparkle effects: stars, spotlights, cursor tilt, magnetism, click ripples, glow blobs.
 - Make things that should feel physical look flat: paper should look like paper, not pure white.
 - Put a black box behind overlays or transitions; they float on the app's own background.
-- Make the hero element small. The plasma ring, papers and heroes are meant to be big.
+- Make the hero element small. The 3D orb, papers and heroes are meant to be big.
 - Write jargon ("NSPanel at statusBar window level"). Say what it does for the student in plain words.
 - Show fake features, fake data, sample notes, placeholder goals or demo numbers as if they were real.
 - Invent testimonials, brand logos, statistics, prices or company addresses.
@@ -35,7 +35,7 @@ Never do any of these:
   "Unlock your potential", "Supercharge", "Seamless" or "Revolutionize".
 - Use Inter or a system default font where Doto belongs.
 - Ask for Full Disk Access or anything that looks suspicious to users.
-- Replace a component I chose (JellyRadio, PlasmaRing, DitherVeil, ProfileCard, BorderGlow, CodeSlots,
+- Replace a component I chose (JellyRadio, 3D Orb, DitherVeil, ProfileCard, BorderGlow, CodeSlots,
   the papers transition) with a different one.
 
 Always:
@@ -64,7 +64,7 @@ Each of these came up while building Locken and has been fixed. Keep them fixed.
 | Decode/scramble title reveal | TextGenerateEffect |
 | Papers too small, on a black background, pure white | Big notebook-paper sheets on a transparent background |
 | A "Fly" button left in the transition | Removed |
-| Plasma ring too small | Fills the 460pt stage (`scale={70}`) |
+| Hero orb too small | Fills the 460pt stage |
 | Hard-coded sample notes | Real notes and Apple Reminders, empty state when there are none |
 | Jargon on the notch card | Plain description of what the check-in does |
 | Fake toggles (Google Calendar, Notion, Drive, "hardware enclave") | Removed |
@@ -93,7 +93,7 @@ Each of these came up while building Locken and has been fixed. Keep them fixed.
 - **Motion:**
   - Springs for movement (`response 0.3–0.45`, `damping 0.6–0.8`), ease-out for fades, nothing over 0.5 s in normal UI.
   - Every animation has a Reduce Motion path.
-  - The papers transition and plasma ring are the only "show" moments.
+  - The papers transition and 3D orb are the only "show" moments.
 - **Layout:**
   - One clear main action per screen.
   - Cards are solid glass with readable text.
@@ -105,7 +105,7 @@ When asking for a new screen or a redesign, attach a screenshot of something you
 
 Sources already chosen for Locken:
 - React Bits (ElectricLogo, DitherVeil, ProfileCard, JellyRadio, CodeSlots, BorderGlow, MagicBento)
-- OriginKit (PlasmaRing)
+- 21st.dev (3D Orb)
 - Aceternity UI (Text Generate Effect)
 - Apple Liquid Glass
 - The Local Flow site's liquid glass techniques

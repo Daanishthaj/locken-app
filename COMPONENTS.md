@@ -15,7 +15,7 @@ Every UI component used in the Locken apps, what it is, where it came from, and 
 | 3 | ProfileCard | Web (React) | React Bits | Sidebar profile card with now-playing music | `LockenTestApp/WebComponents/src/ProfileCard.jsx` + `.css` |
 | 4 | JellyRadio | Web (React) | React Bits | Every single-choice picker (Canvas / My Own Goal, priority, etc.) | `LockenTestApp/WebComponents/src/JellyRadio.jsx` + `.css` |
 | 5 | CodeSlots | Web (React) | React Bits | 6-digit email / authenticator code entry | `LockenTestApp/WebComponents/src/CodeSlots.jsx` + `.css` |
-| 6 | PlasmaRing | Web (React + three.js) | OriginKit | Dashboard and timer hero ring | `LockenTestApp/WebComponents/src/originkit/ui/plasma-ring.tsx` |
+| 6 | 3D Orb | Web (React + three.js) | 21st.dev | Home hero orb | `LockenTestApp/WebComponents/src/components/ui/3d-orb.tsx` |
 | 7 | Menu bar padlock | SwiftUI | Locken's own | The menu bar timer's icon | `LockenTestApp/DesignSystem/LogoTraceLoader.swift` |
 | 8 | Papers transition | Plain HTML/CSS/JS | Your spec | Animation between session setup and the timer | `LockenTestApp/WebComponents/public/papers.html` |
 | 9 | BorderGlow | Native SwiftUI | React Bits port | Every button surface | `LockenTestApp/DesignSystem/SquircleTokens.swift` (`BorderGlowModifier`) |
@@ -207,19 +207,19 @@ import CodeSlots from './CodeSlots';
 
 SwiftUI wrapper: `CodeSlotsField` in `LockenTestApp/Views/ReactBitsWebView.swift`.
 
-### 6. PlasmaRing (OriginKit)
+### 6. 3D Orb (21st.dev)
 
-A glowing lattice ring on a transparent background, installed with OriginKit's `originkit add` CLI.
+A wireframe globe in a soft glow inside a slowly turning starfield (three.js), on a transparent background. Replaced
+OriginKit's plasma ring on 2026-10-25. Adapted from the 21st.dev component: no Tailwind, colours from the app, no earth
+textures (not shipped, so it stays a wireframe), no "Drag to explore" hint, and Reduce Motion holds it still. The page
+CSS fades the starfield toward the frame's edges so no square shows.
 
 ```jsx
-import PlasmaRing from './originkit/ui/plasma-ring';
+import Globe from './components/ui/3d-orb';
 
-<PlasmaRing
-  background="transparent"
-  colors={['#8B5CF6', '#C4B5FD', '#E9D5FF']}   // Locken passes [accent, accent, accent lightened 30%] per tab
-  style={{ minWidth: 0, minHeight: 0, background: 'transparent' }}
-  density={60} centerOpacity={25} scale={70}
-  speed={reducedMotion ? 0 : 100}
+<Globe
+  colors={['#…', '#…', '#…']}   // Locken passes the tab accent darkened 55%, 40% and 15%; the orb drifts between them
+  still={reducedMotion}
 />
 ```
 

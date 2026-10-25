@@ -41,7 +41,7 @@ Locken uses the open-source libraries, fonts and assets below. Each one keeps it
 | Component | Source | License |
 |---|---|---|
 | DitherVeil, ElectricLogo, ProfileCard, JellyRadio, CodeSlots, Strands, GlassIcons, LogoLoop, GradualBlur (ported to SwiftUI) and other effect components | React Bits | MIT + Commons Clause (free to use in a free app; the components themselves may not be sold) |
-| Plasma ring (`LockenTestApp/WebComponents/src/originkit/ui/plasma-ring.tsx`) | OriginKit, installed with the official `originkit add` CLI (free component) | OriginKit's terms for components added to your own projects |
+| 3D orb (`LockenTestApp/WebComponents/src/components/ui/3d-orb.tsx`) | 3D Orb component from 21st.dev (https://21st.dev), adapted for Locken | As published on 21st.dev; built on three.js (MIT) |
 | Menu bar padlock (`LockenLogo.menuBarImage` in `LogoTraceLoader.swift`) | Locken's padlock logo; the sign-in mascot was removed on 2026-10-18 | Locken's own |
 
 ## 3D models and media

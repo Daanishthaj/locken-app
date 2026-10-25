@@ -25,7 +25,12 @@ const dotoDigits = `font-family: 'Doto', sans-serif; font-weight: 900; font-vari
 const pages = {
   electric: { css: '', js: '' },
   dither: { css: '', js: '' },
-  plasma: { css: '', js: '' },
+  // Home's 3D orb (three.js). Its starfield fades out toward the frame's edges, so no square shows around it.
+  orb: {
+    css: `#root { position: relative; -webkit-mask-image: radial-gradient(circle closest-side at 50% 50%, #000 62%, transparent 100%);
+  mask-image: radial-gradient(circle closest-side at 50% 50%, #000 62%, transparent 100%); }`,
+    js: '',
+  },
   // Liquid-glass clock digits for the focus timer: a WebGL canvas, in the app's Montserrat for the digit shapes.
   fluidglass: { css: fonts, js: '' },
   // The Assistant's hero: React Bits Strands (WebGL2 light strands) on a transparent page.

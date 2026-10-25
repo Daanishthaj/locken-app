@@ -29,7 +29,7 @@ Legend: ✅ ported · 🟡 partly ported · ⬜ to port · 🪟 Windows equivale
 | Mac | Windows |
 |---|---|
 | Greeting with signature-written name (`SignatureText`) | ✅ (written once per account each launch, after the intro) |
-| Plasma ring with four glass boxes and stat cards | ✅ |
+| 3D orb with four glass boxes and stat cards | ✅ |
 | Session setup: Canvas Assignment / My Own Goal pills | ✅ link row, searchable picker (Return picks the top match) |
 | Dotted pill and tile text stays sharp: 15 px or larger, snapped to whole pixels; rows wrap instead of being cut off | ✅ (Windows tiles wrap onto a second row; Mac pills and app tiles wrap too) |
 | Intelligent Rephrase (AI sparkle) | ✅ Claude, ChatGPT or Gemini key; requests and key stay in Rust |

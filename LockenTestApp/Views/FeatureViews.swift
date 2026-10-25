@@ -24,7 +24,7 @@ public struct TestDashboardView: View {
         DashboardAnnotation(label: "Momentum", anchor: UnitPoint(x: 0.78, y: 0.88), target: UnitPoint(x: 0.68, y: 0.68))
     ]
 
-    /// A calm home (2026-10-19): the greeting, the plasma ring, one card to start a session, the daily summary
+    /// A calm home (2026-10-19): the greeting, the 3D orb, one card to start a session, the daily summary
     /// and today's habits. It opens at the top, with the greeting and the whole ring in view.
     public var body: some View {
         ScrollView(showsIndicators: false) {
@@ -51,9 +51,9 @@ public struct TestDashboardView: View {
                 if isInteractiveMode {
                     // Stays in the hierarchy while a metric card is open: tearing the SceneKit scene down
                     // and rebuilding it on every open/close made opening a card lag.
-                    // OriginKit PlasmaRing in the tab's colors (replaces the SceneKit orbital sphere).
+                    // The 3D orb (three.js) in the tab's colors.
                     ReactBitsWebView(
-                        page: .plasmaRing,
+                        page: .orb,
                         props: ["colors": {
                             let accent = SquircleTokens.accentColor(for: state.selectedTab)
                             // Darker than the accent, so the ring sits quietly on the black page.
@@ -89,9 +89,9 @@ public struct TestDashboardView: View {
                 } else {
                     // Original static-annotation dashboard — unchanged, kept fully
                     // reachable by setting isInteractiveMode to false.
-                    // OriginKit PlasmaRing in the tab's colors (replaces the SceneKit orbital sphere).
+                    // The 3D orb (three.js) in the tab's colors.
                     ReactBitsWebView(
-                        page: .plasmaRing,
+                        page: .orb,
                         props: ["colors": {
                             let accent = SquircleTokens.accentColor(for: state.selectedTab)
                             // Darker than the accent, so the ring sits quietly on the black page.

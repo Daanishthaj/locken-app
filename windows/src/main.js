@@ -1439,12 +1439,12 @@ function applyTheme(page) {
   root.setProperty('--bg-top', theme.top);
   const hex = theme.accent.slice(1);
   fiberColor = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(', ');
-  const plasma = $('plasma');
-  try { plasma?.contentWindow?.updateProps?.({ colors: JSON.stringify([theme.accent, theme.accent, theme.light]) }); } catch { /* not loaded yet */ }
+  const orb = $('orb');
+  try { orb?.contentWindow?.updateProps?.({ colors: JSON.stringify([theme.accent, theme.accent, theme.light]) }); } catch { /* not loaded yet */ }
   currentPage = page;
   updateProfileCard();
 }
-$('plasma').addEventListener('load', () => applyTheme('dashboard'));
+$('orb').addEventListener('load', () => applyTheme('dashboard'));
 
 // ---------- Sidebar profile card (the Mac app's SidebarProfileCard) ----------
 // The same React Bits ProfileCard as the Mac: your name, your Windows account name, where your data lives, and

@@ -13,7 +13,7 @@ struct ReactBitsWebView: NSViewRepresentable {
         case ditherVeil = "dither"
         case profileCard = "profile"
         case jellyRadio = "jelly"
-        case plasmaRing = "plasma"
+        case orb = "orb"
         case codeSlots = "codeslots"
         /// Liquid-glass clock digits for the focus timer (WebComponents/src/fluidglass-entry.jsx).
         case fluidGlassTime = "fluidglass"
