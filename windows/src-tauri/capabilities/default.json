@@ -1,0 +1,53 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "The main window: events, its own focus, bringing itself back and closing for good (the quit countdown), sign-in storage, the blocker, opening the check-in, now playing and play/pause for the profile card, the Windows account name, the student's own AI key and Intelligent Rephrase, linking Canvas and loading its assignments, the tray timer's text, opening Locken's own web pages (Terms, Privacy), Supabase's Google sign-in page in the browser and Windows' notification settings (for Do Not Disturb), and receiving the locken:// link back from Google sign-in.",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:event:default",
+    "core:window:allow-set-focus",
+    "core:window:allow-unminimize",
+    "core:window:allow-destroy",
+    "allow-open-checkin",
+    "allow-start-blocking",
+    "allow-stop-blocking",
+    "allow-default-blocked-apps",
+    "allow-running-apps",
+    "allow-open-workspace-app",
+    "allow-save-session",
+    "allow-load-session",
+    "allow-clear-session",
+    "allow-now-playing",
+    "allow-media-play-pause",
+    "allow-user-name",
+    "allow-ai-key-status",
+    "allow-ai-save-key",
+    "allow-ai-remove-key",
+    "allow-ai-rephrase",
+    "allow-ai-milestones",
+    "allow-ai-week-digest",
+    "allow-canvas-status",
+    "allow-canvas-link-token",
+    "allow-canvas-link-feed",
+    "allow-canvas-refresh",
+    "allow-canvas-unlink",
+    "allow-tray-status",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://locken-app.vercel.app/*"
+        },
+        {
+          "url": "https://isohdbjcvluvaflmrfeg.supabase.co/auth/v1/authorize*"
+        },
+        {
+          "url": "ms-settings:notifications"
+        }
+      ]
+    },
+    "deep-link:default"
+  ]
+}

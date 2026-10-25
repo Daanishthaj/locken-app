@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- CleanMyMac Signature Seamless Master Aurora Flow -->
+    <linearGradient id="cmmPureAurora" x1="10%" y1="10%" x2="90%" y2="90%">
+      <stop offset="0%" stop-color="#FF247D" />
+      <stop offset="26%" stop-color="#E11D48" />
+      <stop offset="52%" stop-color="#8B5CF6" />
+      <stop offset="76%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+
+    <!-- Deep Volumetric Inner Depth Glow (No harsh border, pure depth) -->
+    <radialGradient id="innerDepthSoft" cx="50%" cy="38%" r="68%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.22" />
+      <stop offset="45%" stop-color="#FF247D" stop-opacity="0.08" />
+      <stop offset="85%" stop-color="#000000" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.45" />
+    </radialGradient>
+
+    <!-- Liquid Platinum Chrome Arch -->
+    <linearGradient id="liquidPlatinum" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="18%" stop-color="#F1F5F9" />
+      <stop offset="38%" stop-color="#E2E8F0" />
+      <stop offset="55%" stop-color="#94A3B8" />
+      <stop offset="72%" stop-color="#F8FAFC" />
+      <stop offset="88%" stop-color="#CBD5E1" />
+      <stop offset="100%" stop-color="#FFFFFF" />
+    </linearGradient>
+
+    <!-- Specular Crest Light -->
+    <linearGradient id="archSpecular" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.3" />
+      <stop offset="25%" stop-color="#FFFFFF" stop-opacity="1.0" />
+      <stop offset="75%" stop-color="#FFFFFF" stop-opacity="1.0" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.3" />
+    </linearGradient>
+
+    <!-- Crystal Diamond Facets -->
+    <linearGradient id="facetNW" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#E0E7FF" stop-opacity="0.4" />
+    </linearGradient>
+
+    <linearGradient id="facetNE" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#FCE7F3" stop-opacity="0.45" />
+    </linearGradient>
+
+    <linearGradient id="facetSW" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00F0FF" stop-opacity="0.9" />
+      <stop offset="60%" stop-color="#3B82F6" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.2" />
+    </linearGradient>
+
+    <linearGradient id="facetSE" x1="100%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#FF247D" stop-opacity="0.9" />
+      <stop offset="60%" stop-color="#9333EA" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.2" />
+    </linearGradient>
+
+    <!-- Center Cushion Glint -->
+    <linearGradient id="diamondCenter" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95" />
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#BAE6FD" stop-opacity="0.3" />
+    </linearGradient>
+
+    <!-- Focus Core Singularity -->
+    <radialGradient id="singularityGrad" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="35%" stop-color="#E0F2FE" />
+      <stop offset="65%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+    </radialGradient>
+
+    <!-- Ambient Core Bloom -->
+    <radialGradient id="coreBloom" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.8" />
+      <stop offset="35%" stop-color="#00F0FF" stop-opacity="0.6" />
+      <stop offset="70%" stop-color="#FF247D" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Apple Diagonal Glass Specular Sheen (Curved, Soft) -->
+    <linearGradient id="softSheen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.3" />
+      <stop offset="32%" stop-color="#FFFFFF" stop-opacity="0.08" />
+      <stop offset="65%" stop-color="#FFFFFF" stop-opacity="0.0" />
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="tileDropShadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="32" stdDeviation="38" flood-color="#000000" flood-opacity="0.55" />
+    </filter>
+
+    <filter id="emblemShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#000000" flood-opacity="0.45" />
+    </filter>
+
+    <filter id="coreGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="b1" />
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b2" />
+      <feMerge>
+        <feMergeNode in="b1" />
+        <feMergeNode in="b2" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- ── MACOS SQUIRCLE TILE (100% BORDERLESS, NO WHITE BORDER) ── -->
+  <g transform="translate(100, 100)" filter="url(#tileDropShadow)">
+    <!-- Natural Depth Shadow -->
+    <rect x="0" y="24" width="824" height="824" rx="185" fill="#000000" opacity="0.4" />
+
+    <!-- Pure Borderless CleanMyMac Aurora Squircle Body -->
+    <rect x="0" y="0" width="824" height="824" rx="185" fill="url(#cmmPureAurora)" />
+    <rect x="0" y="0" width="824" height="824" rx="185" fill="url(#innerDepthSoft)" />
+
+    <!-- Concentric Laser Chronometer Rings (Subtle, Translucent) -->
+    <circle cx="412" cy="412" r="315" fill="none" stroke="#FFFFFF" stroke-width="1.2" opacity="0.1" />
+    <circle cx="412" cy="412" r="270" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-dasharray="3 8" opacity="0.18" />
+
+    <!-- ── HERO EMBLEM: SCULPTED 3D CHROME ARCH & FLAWLESS DIAMOND ── -->
+    <g transform="translate(412, 400)" filter="url(#emblemShadow)">
+
+      <!-- (1) Liquid Platinum Chrome Shackle Arch -->
+      <path d="M -160,55 L -160,-85 C -160,-210 160,-210 160,-85 L 160,55"
+            fill="none" stroke="#000000" stroke-width="74" stroke-linecap="round" opacity="0.35" />
+      <path d="M -160,55 L -160,-85 C -160,-210 160,-210 160,-85 L 160,55"
+            fill="none" stroke="url(#liquidPlatinum)" stroke-width="64" stroke-linecap="round" />
+      <path d="M -160,55 L -160,-85 C -160,-210 160,-210 160,-85 L 160,55"
+            fill="none" stroke="url(#archSpecular)" stroke-width="5" stroke-linecap="round" />
+
+      <!-- (2) Flawless Optical Crystal Prism Gem -->
+      <g transform="translate(0, 42)">
+        <!-- Ambient Caustic Core Glow -->
+        <circle cx="0" cy="0" r="130" fill="url(#coreBloom)" opacity="0.8" filter="url(#coreGlow)" />
+
+        <!-- Deep Cast Shadow of the Gem onto the Glass Body -->
+        <polygon points="0,-125 175,0 0,155 -175,0" fill="#000000" opacity="0.28" />
+
+        <!-- 3D Geometric Crystal Facets -->
+        <polygon points="0,-125 -175,0 0,0" fill="url(#facetNW)" />
+        <polygon points="0,-125 175,0 0,0" fill="url(#facetNE)" />
+        <polygon points="0,0 -175,0 0,155" fill="url(#facetSW)" />
+        <polygon points="0,0 175,0 0,155" fill="url(#facetSE)" />
+
+        <!-- Inner Cushion Table Cut Brilliant Facets -->
+        <polygon points="0,-82 -105,0 0,0" fill="url(#diamondCenter)" opacity="0.85" />
+        <polygon points="0,-82 105,0 0,0" fill="#FFFFFF" opacity="0.5" />
+        <polygon points="0,0 -105,0 0,95" fill="#00F0FF" opacity="0.55" />
+        <polygon points="0,0 105,0 0,95" fill="#FF247D" opacity="0.55" />
+
+        <!-- Diamond-Cut Specular Ridge Lines (Razor Precision) -->
+        <line x1="0" y1="-125" x2="0" y2="155" stroke="#FFFFFF" stroke-width="2.2" opacity="0.95" />
+        <line x1="-175" y1="0" x2="175" y2="0" stroke="#FFFFFF" stroke-width="2.2" opacity="0.95" />
+        <line x1="0" y1="-125" x2="-175" y2="0" stroke="#FFFFFF" stroke-width="2.4" opacity="0.95" />
+        <line x1="0" y1="-125" x2="175" y2="0" stroke="#FFFFFF" stroke-width="2.4" opacity="0.95" />
+        <line x1="-175" y1="0" x2="0" y2="155" stroke="#FFFFFF" stroke-width="2.4" opacity="0.95" />
+        <line x1="175" y1="0" x2="0" y2="155" stroke="#FFFFFF" stroke-width="2.4" opacity="0.95" />
+
+        <line x1="0" y1="-82" x2="-105" y2="0" stroke="#FFFFFF" stroke-width="1.4" opacity="0.8" />
+        <line x1="0" y1="-82" x2="105" y2="0" stroke="#FFFFFF" stroke-width="1.4" opacity="0.8" />
+        <line x1="-105" y1="0" x2="0" y2="95" stroke="#FFFFFF" stroke-width="1.4" opacity="0.8" />
+        <line x1="105" y1="0" x2="0" y2="95" stroke="#FFFFFF" stroke-width="1.4" opacity="0.8" />
+
+        <!-- (3) The Sovereign Focus Singularity (Pure Radiant Crystal Core) -->
+        <g filter="url(#coreGlow)">
+          <!-- Outer Liquid Chrome Bezel Ring -->
+          <circle cx="0" cy="0" r="34" fill="#0E0720" stroke="url(#liquidPlatinum)" stroke-width="2.5" />
+          <circle cx="0" cy="0" r="28" fill="url(#singularityGrad)" />
+          
+          <!-- Concentric Precision Ring -->
+          <circle cx="0" cy="0" r="18" fill="none" stroke="#FFFFFF" stroke-width="0.8" opacity="0.6" stroke-dasharray="2 3" />
+
+          <!-- Center Pure White Focus Node -->
+          <circle cx="0" cy="0" r="7" fill="#FFFFFF" />
+          <circle cx="0" cy="0" r="3" fill="#00F0FF" />
+
+          <!-- Specular Curved Glint -->
+          <path d="M -20,-20 C -6,-28 10,-24 18,-12 C 6,-14 -6,-10 -20,-20 Z" fill="#FFFFFF" opacity="0.85" />
+        </g>
+      </g>
+    </g>
+
+    <!-- Soft Curved Glass Specular Sheen (No hard lines) -->
+    <path d="M 0,185 C 0,82.8 82.8,0 185,0 L 639,0 C 741.2,0 824,82.8 824,185 L 824,310 C 560,250 260,320 0,470 Z"
+          fill="url(#softSheen)" opacity="0.25" style="mix-blend-mode: screen;" />
+  </g>
+</svg>

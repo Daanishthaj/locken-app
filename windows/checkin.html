@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Locken check-in</title>
+<link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="checkin-body">
+<!-- The Mac app's check-in: how far into your goal you are, on a slider. -->
+<form class="checkin" id="checkin-form" novalidate>
+  <div class="checkin-head"><span class="checkin-title">Check-in</span><span class="checkin-left"><i></i><span id="checkin-left">--:-- left</span></span></div>
+  <p class="checkin-question">How far into your goal are you?</p>
+  <p class="checkin-goal" id="checkin-goal"></p>
+  <div class="checkin-row">
+    <input type="range" id="checkin-progress" min="0" max="100" step="5" value="0" aria-label="How far into your goal, in percent">
+    <b class="checkin-value" id="checkin-value">0%</b>
+    <button class="btn checkin-btn" type="submit">Check In</button>
+  </div>
+  <p class="checkin-preview" id="checkin-preview" hidden></p>
+</form>
+<script type="module" src="/src/checkin.js"></script>
+</body>
+</html>

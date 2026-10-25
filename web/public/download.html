@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Download Locken</title>
+<meta name="description" content="Download Locken, the free focus app for Mac.">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+@font-face { font-family: "Doto"; src: url("/fonts/Doto.ttf") format("truetype"); font-weight: 100 900; font-style: normal; font-display: swap; }
+:root { color-scheme: dark; --bg: #07060d; --line: rgba(255, 255, 255, 0.1); --violet: #7b61ff; }
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  margin: 0; min-height: 100vh; display: flex; flex-direction: column; color: #fff;
+  background: radial-gradient(70% 60% at 50% 30%, #2f2a86 0%, #18144f 45%, var(--bg) 100%) fixed;
+  font: 800 16px/1.6 "Doto", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-variation-settings: "ROND" 100; -webkit-font-smoothing: antialiased;
+}
+a { color: #fff; }
+header, footer { padding: 20px 16px; }
+.wrap { width: 100%; max-width: 640px; margin: 0 auto; }
+.brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 900; }
+main { flex: 1; display: grid; place-items: center; padding: 32px 16px 64px; }
+.card {
+  width: 100%; max-width: 640px; padding: clamp(28px, 6vw, 48px); border-radius: 18px; text-align: center;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 30px 60px -36px rgba(0, 0, 0, 0.9);
+  -webkit-backdrop-filter: blur(22px) saturate(160%); backdrop-filter: blur(22px) saturate(160%);
+}
+.card img { margin: 0 auto 20px; }
+h1 { margin: 0 0 12px; font-size: clamp(32px, 7vw, 48px); line-height: 1.15; font-weight: 900; }
+.lead { margin: 0 auto 28px; max-width: 46ch; }
+.btn {
+  display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 12px;
+  background: #fff; color: #0b0a14; text-decoration: none; font-weight: 900; font-size: 17px;
+  transition: background-color 0.2s ease;
+}
+@media (hover: hover) and (pointer: fine) { .btn:hover { background: #e9e6ff; } }
+.btn:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
+.req { margin: 18px 0 0; font-size: 14px; }
+.steps { margin: 32px 0 0; padding: 24px 0 0; border-top: 1px solid var(--line); text-align: left; font-size: 14px; }
+.steps h2 { margin: 0 0 10px; font-size: 16px; font-weight: 900; }
+.steps ol { margin: 0; padding-left: 20px; }
+.steps li + li { margin-top: 6px; }
+footer { font-size: 14px; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: center; }
+</style>
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/"><img src="/locken-logo.png" alt="" width="26" height="26">Locken</a></div></header>
+<main>
+  <section class="card" aria-labelledby="title">
+    <img src="/locken-logo.png" alt="" width="72" height="72">
+    <h1 id="title">Download Locken</h1>
+    <p class="lead">The free focus app for Mac. Pick the assignment, start the timer, and Locken closes games, social media and YouTube until you're done.</p>
+    <a class="btn" href="/Locken.dmg" download>Download for Mac</a>
+    <p class="req">Requires macOS 15 Sequoia or later, on an Apple silicon or Intel Mac.</p>
+    <div class="steps">
+      <h2>Installing</h2>
+      <ol>
+        <li>Open Locken.dmg and drag Locken into Applications.</li>
+        <li>Open Locken from your Applications folder.</li>
+        <li>If macOS says it can't check Locken for malware, open System Settings, go to Privacy &amp; Security, and click Open Anyway.</li>
+      </ol>
+    </div>
+  </section>
+</main>
+<footer><div class="wrap">
+  <a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/acceptable-use">Acceptable Use</a><a href="mailto:daanu.focus@gmail.com">daanu.focus@gmail.com</a>
+</div></footer>
+</body>
+</html>

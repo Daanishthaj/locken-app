@@ -1,0 +1,43 @@
+# Security scans on every push and once a week, so new problems show up without anyone running them by hand:
+# OSV-Scanner checks every lockfile for known-vulnerable or malicious packages, and Semgrep checks Locken's own code
+# (Mac, Windows, website, Supabase) for injection, secrets and other risky patterns. Either one finding fails the run.
+name: Security scans
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '17 9 * * 1' # Mondays, so newly published advisories against unchanged code are caught too
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: google/osv-scanner-action/osv-scanner-action@b1d267aea5211fa648d9d442fa64b90dbdcbdd36 # v2.7.0
+        with:
+          scan-args: |-
+            --lockfile=web/package-lock.json
+            --lockfile=windows/package-lock.json
+            --lockfile=windows/src-tauri/Cargo.lock
+            --lockfile=LockenTestApp/WebComponents/package-lock.json
+
+  code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Semgrep
+        run: |
+          pip install semgrep==1.181.0
+          semgrep scan --metrics off --error \
+            --config p/default --config p/secrets --config p/javascript --config p/react --config p/rust --config p/swift \
+            --exclude node_modules --exclude dist --exclude dist-preview --exclude target --exclude draco \
+            --exclude '*.min.js' --exclude windows/public --exclude LockenTestApp/Resources/Web \
+            LockenTestApp windows web supabase scripts .github

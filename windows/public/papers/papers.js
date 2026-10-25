@@ -1,0 +1,243 @@
+// Ported from the Mac app (LockenTestApp/Resources/Web/papers.html); only the message bridge differs.
+// Locken plays this page as the transition into the focus timer. Ten sheets are tossed up off the stack. Air
+  // drags on them as they rise and spread, so each sheet bends and flutters along its length (a chain of hinged
+  // strips), then they fall back, flatten out and settle with a small bounce. Height above the desk drives size,
+  // curl, flutter and a shadow that spreads and fades. Tells the app when it starts and when the stack has settled.
+  // Windows: the page runs in an iframe, so it tells the app window through postMessage (same origin only).
+  const locken = { postMessage: (message) => window.parent.postMessage({ papers: message }, window.location.origin) };
+  const OUT = 480;      // ms rising and spreading out
+  const SETTLE = 820;   // ms falling back and settling
+  const STRIPS = 7;
+  const SHEET_W = 18;   // vmin
+  const CORNER = 2.5;   // vmin, the size of a corner that can fold (fits inside one strip)
+  let frame, doneTimer, finished = false;
+  const finish = () => { if (!finished) { finished = true; locken?.postMessage('done'); } };
+
+  function buildSheet(i) {
+    const shadow = document.createElement('div');
+    shadow.className = 'shadow';
+    const sheet = document.createElement('div');
+    sheet.className = 'sheet';
+    // (No CSS filter on the sheet: it would flatten the 3D bend.)
+    shadow.style.zIndex = String(i * 2);
+    sheet.style.zIndex = String(i * 2 + 1);
+    const w = SHEET_W / STRIPS;
+    const strips = [];
+    const paperAt = (el, x, y) => {
+      el.style.backgroundSize = `160px 160px, ${SHEET_W}vmin 24vmin, ${SHEET_W}vmin 24vmin, ${SHEET_W}vmin 24vmin`;
+      const pos = `-${x}vmin -${y}vmin`;
+      el.style.backgroundPosition = `${pos}, ${pos}, ${pos}, ${pos}`;
+    };
+    const flaps = [];
+    let parent = sheet;
+    for (let s = 0; s < STRIPS; s++) {
+      const strip = document.createElement('div');
+      strip.className = 'strip' + (s === 0 ? ' first' : '') + (s === STRIPS - 1 ? ' last' : '');
+      strip.style.width = `calc(${w}vmin + 0.5px)`; // a hair of overlap hides seams
+      if (s > 0) strip.style.left = `${w}vmin`;
+      const face = document.createElement('div');
+      face.className = 'face';
+      paperAt(face, s * w, 0);
+      const shade = document.createElement('div');
+      shade.className = 'shade';
+      face.appendChild(shade);
+      if (s === 0) {
+        const holes = document.createElement('div');
+        holes.className = 'holes';
+        face.appendChild(holes);
+      }
+      strip.appendChild(face);
+      // Corners: top-right on the last strip, bottom-left on the first. The face is cut where the corner folds.
+      if (s === STRIPS - 1 || s === 0) {
+        const top = s === STRIPS - 1;
+        const c = CORNER;
+        face.style.clipPath = top
+          ? `polygon(0 0, calc(100% - ${c}vmin) 0, 100% ${c}vmin, 100% 100%, 0 100%)`
+          : `polygon(0 0, 100% 0, 100% 100%, ${c}vmin 100%, 0 calc(100% - ${c}vmin))`;
+        const flap = document.createElement('div');
+        flap.className = 'flap';
+        flap.style.width = `${c}vmin`;
+        flap.style.height = `${c}vmin`;
+        if (top) {
+          flap.style.left = `calc(${w}vmin - ${c}vmin + 0.5px)`;
+          flap.style.top = '0';
+          flap.style.clipPath = 'polygon(0 0, 100% 0, 100% 100%)';
+          flap.style.transformOrigin = '0 0';
+          flap.style.borderTopRightRadius = '0.4vmin';
+          paperAt(flap, s * w + w - c, 0);
+        } else {
+          flap.style.left = '0';
+          flap.style.top = `calc(24vmin - ${c}vmin)`;
+          flap.style.clipPath = 'polygon(0 0, 100% 100%, 0 100%)';
+          flap.style.transformOrigin = '0 0';
+          flap.style.borderBottomLeftRadius = '0.4vmin';
+          paperAt(flap, 0, 24 - c);
+        }
+        const flapShade = document.createElement('div');
+        flapShade.className = 'shade';
+        flap.appendChild(flapShade);
+        strip.appendChild(flap);
+        flaps.push({ el: flap, shade: flapShade, top });
+      }
+      parent.appendChild(strip);
+      strips.push({ el: strip, shade });
+      parent = strip;
+    }
+    stage.appendChild(shadow);
+    stage.appendChild(sheet);
+    return { sheet, shadow, strips, flaps };
+  }
+
+  function fly() {
+    cancelAnimationFrame(frame);
+    clearTimeout(doneTimer);
+    stage.innerHTML = '';
+    finished = false;
+    locken?.postMessage('flying');
+
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      doneTimer = setTimeout(finish, 150);
+      return;
+    }
+
+    const sheets = Array.from({ length: 10 }, (_, i) => {
+      const parts = buildSheet(i);
+      const angle = Math.random() * Math.PI * 2;
+      const reach = 0.45 + Math.random() * 0.55;
+      return {
+        ...parts,
+        x: Math.cos(angle) * innerWidth * 0.36 * reach,
+        y: Math.sin(angle) * innerHeight * 0.32 * reach,
+        spin: (Math.random() - 0.5) * 300,
+        lift: 0.55 + Math.random() * 0.45,
+        phase: Math.random() * Math.PI * 2,
+        // Which way air catches it: positive curls the far edge up, negative down.
+        curlSide: Math.random() < 0.5 ? -1 : 1,
+        stiffness: 0.75 + Math.random() * 0.5,
+        // Corners: which way each one flips in the air, and the small dog-ear some sheets keep after landing.
+        cornerSide: [Math.random() < 0.5 ? -1 : 1, Math.random() < 0.5 ? -1 : 1],
+        cornerPhase: Math.random() * Math.PI * 2,
+        dogEar: Math.random() < 0.35 ? 8 + Math.random() * 14 : 0,
+        homeX: (Math.random() - 0.5) * 6,
+        homeY: (Math.random() - 0.5) * 6,
+        homeSpin: (Math.random() - 0.5) * 5,
+        delay: i * 14,
+      };
+    });
+
+    const start = performance.now();
+    const outNorm = 1 - Math.exp(-OUT / 120);
+
+    function step(now) {
+      let busy = false;
+      for (const s of sheets) {
+        const t = now - start - s.delay;
+        let travel, height, speed;
+        if (t <= 0) {
+          travel = 0; height = 0; speed = 0;
+        } else if (t < OUT) {
+          // Thrown: fast at first, air resistance slows it.
+          travel = (1 - Math.exp(-t / 120)) / outNorm;
+          height = Math.sin((t / OUT) * Math.PI / 2) * s.lift;
+          speed = Math.exp(-t / 120); // 1 at the throw, easing off
+        } else {
+          // Falling home: a damped spring, so it overshoots slightly and settles.
+          const u = t - OUT;
+          travel = Math.exp(-u / 140) * Math.cos(u / 150);
+          height = Math.max(0, travel) ** 1.6 * s.lift;
+          speed = Math.min(1, Math.abs(Math.exp(-u / 140) * (Math.sin(u / 150) / 150 + Math.cos(u / 150) / 140)) * 120);
+        }
+        if (t < OUT + SETTLE) busy = true;
+
+        // Whole-sheet motion.
+        const tiltX = Math.sin(t / 85 + s.phase) * 14 * height;
+        const tiltY = Math.cos(t / 110 + s.phase) * 10 * height;
+        const x = s.homeX + s.x * travel;
+        const y = s.homeY + s.y * travel - height * 18;
+        const spin = s.homeSpin + s.spin * travel;
+        const scale = 1 + height * 0.09;
+        s.sheet.style.transform =
+          `translate3d(${x}px, ${y}px, 0) rotate(${spin}deg) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(${scale})`;
+
+        // Bend: air pressure from moving curls the whole sheet into a U (up to about 200° end to end on a fast
+        // throw). The curl follows the air through a spring, so it lags, overshoots and wobbles like real paper,
+        // and a travelling ripple runs along the sheet while it's up. Landing presses it flat again.
+        const target = s.curlSide * (200 * speed + 80 * height) / s.stiffness;
+        const dt = Math.min(0.05, (now - (s.lastNow ?? now)) / 1000) || 0.016;
+        s.lastNow = now;
+        s.curlVel = (s.curlVel ?? 0) + ((target - (s.curlNow ?? 0)) * 160 - (s.curlVel ?? 0) * 14) * dt;
+        s.curlNow = (s.curlNow ?? 0) + s.curlVel * dt;
+        const totalBend = s.curlNow;
+        const curl = totalBend / (STRIPS - 1);
+        // Strips turned away from the light darken; turned towards it catch a highlight. Each strip's shade is a
+        // gradient from its left edge's light to its right edge's, so the shading flows smoothly across the curl.
+        const tone = (turn) => {
+          const light = Math.sin((turn + tiltY) * Math.PI / 180) + Math.abs(tiltX) / 90 * -1;
+          return light > 0
+            ? `rgba(40, 25, 80, ${Math.min(0.3, light * 0.5).toFixed(3)})`
+            : `rgba(255, 255, 255, ${Math.min(0.32, -light * 0.55).toFixed(3)})`;
+        };
+        // Hinge angles: the bend is spread evenly (a cylinder), plus the ripple. The first strip turns back by half
+        // the total, so the middle of the sheet faces the camera and both edges curl up together.
+        const angles = [];
+        let sum = 0;
+        for (let k = 1; k < STRIPS; k++) {
+          const ripple = Math.sin(t / 45 - k * 1.1 + s.phase) * 26 * height * (0.4 + speed);
+          const a = curl + ripple;
+          angles.push(a);
+          sum += a;
+        }
+        s.strips[0].el.style.transform = `rotateY(${(-sum / 2).toFixed(2)}deg)`;
+        let turned = -sum / 2;
+        let leftTone = tone(turned);
+        for (let k = 0; k < STRIPS; k++) {
+          let angle = 0;
+          if (k > 0) {
+            angle = angles[k - 1];
+            s.strips[k].el.style.transform = `rotateY(${angle.toFixed(2)}deg)`;
+          }
+          turned += angle;
+          const rightTone = tone(turned + (k < STRIPS - 1 ? angles[k] ?? 0 : 0));
+          s.strips[k].shade.style.background = `linear-gradient(to right, ${leftTone}, ${rightTone})`;
+          leftTone = rightTone;
+        }
+
+        // Corners fold over along their diagonal: air pushes them over while the sheet moves and they flap in the
+        // turbulence; landing presses them flat again, except a slight dog-ear on some sheets.
+        s.flaps.forEach((flap, n) => {
+          const flutter = 0.5 + 0.5 * Math.sin(t / 55 + s.cornerPhase + n * 1.7);
+          const inAir = Math.max(speed, height);
+          const fold = s.cornerSide[n] * (150 * speed + 110 * height * flutter) + (n === 0 ? s.dogEar : 0) * (1 - inAir);
+          // Top-right folds about the line from its top-left to bottom-right; bottom-left about top-left to bottom-right.
+          flap.el.style.transform = `rotate3d(1, 1, 0, ${fold.toFixed(2)}deg)`;
+          const showsBack = Math.abs(fold) > 90;
+          const tilt = Math.abs(Math.sin(fold * Math.PI / 180));
+          flap.shade.style.background = showsBack
+            ? `rgba(50, 35, 95, ${(0.16 + 0.12 * (1 - tilt)).toFixed(3)})`
+            : `rgba(40, 25, 80, ${(tilt * 0.22).toFixed(3)})`;
+        });
+
+        // Shadow on the desk: tight and dark when flat, wide, offset and faint when lifted; shortens with the curl.
+        const offset = 0.5 + height * 3.2; // vmin
+        const blur = 1.0 + height * 5.5;    // vmin
+        const alpha = 0.42 - height * 0.22;
+        // A curled sheet casts a narrower shadow.
+        const squash = Math.max(0.45, Math.cos(Math.min(Math.PI / 2, Math.abs(totalBend) * Math.PI / 360)));
+        s.shadow.style.transform =
+          `translate3d(${x}px, calc(${y + height * 18}px + ${offset}vmin), 0) rotate(${spin}deg) scale(${scale * squash}, ${scale})`;
+        s.shadow.style.filter = `blur(${blur.toFixed(2)}vmin)`;
+        s.shadow.style.opacity = alpha.toFixed(3);
+      }
+      if (busy) {
+        frame = requestAnimationFrame(step);
+      } else {
+        clearTimeout(doneTimer);
+        finish();
+      }
+    }
+    frame = requestAnimationFrame(step);
+    // Backup in case frames stop (hidden window): finish anyway.
+    doneTimer = setTimeout(finish, OUT + SETTLE + 400);
+  }
+  fly();
+  locken?.postMessage('ready');

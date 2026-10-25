@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="electric.css">
+<style>html, body, #root { margin: 0; width: 100%; height: 100%; background: transparent; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="electric.js"></script>
+
+<script>addEventListener('load', () => requestAnimationFrame(() => requestAnimationFrame(() => window.webkit?.messageHandlers?.locken?.postMessage('ready'))));</script>
+</body>
+</html>

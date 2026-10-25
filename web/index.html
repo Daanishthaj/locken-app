@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#07060d" />
+    <title>Locken — The focus app</title>
+    <meta name="description" content="Locken is the focus app. Pick a Canvas assignment or type a goal, start the timer, and Locken keeps games, social media and YouTube closed until you're done." />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Locken — The focus app" />
+    <meta property="og:description" content="Pick the assignment, start the timer, and Locken keeps distractions closed. Free, and your focus data stays on your computer." />
+    <meta property="og:image" content="https://locken-app.vercel.app/icon-512.png" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="stylesheet" href="/src/site/site.css" />
+    <script src="/boot.js"></script>
+  </head>
+  <body>
+    <a href="#session" class="skip">Skip to content</a>
+
+    <!-- Behind everything: the page backdrop and the 3D figure for the first three sections. -->
+    <div class="backdrop" aria-hidden="true">
+      <div class="backdrop-hero"></div>
+      <div class="backdrop-night"></div>
+      <div class="backdrop-black"></div>
+      <div class="backdrop-noise"></div>
+    </div>
+    <canvas id="figure" class="figure-canvas" aria-hidden="true"></canvas>
+    <pre id="figure-ascii" class="figure-ascii" aria-hidden="true"></pre>
+    <div class="frame" aria-hidden="true"></div>
+
+    <header class="nav">
+      <a class="nav-logo" href="#top" aria-label="Locken home"><span>Locken</span><span>Focus</span></a>
+      <nav class="nav-pill glass" aria-label="Main">
+        <button class="nav-menu-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+        <div class="nav-links" id="nav-links">
+          <a href="#session">The session</a>
+          <a href="#features">Features</a>
+          <a href="#inside">Inside Locken</a>
+          <a href="#how">How it works</a>
+        </div>
+        <a class="btn btn-solid" href="/Locken.dmg" download data-download>Download for Mac <span class="arrow" aria-hidden="true"></span></a>
+      </nav>
+    </header>
+
+    <main>
+      <!-- Hero -->
+      <section class="hero" id="top">
+        <div class="hero-copy">
+          <h1 data-split>Pick the assignment. Locken handles the distractions.</h1>
+          <p class="hero-sub" data-reveal>The focus app. Your focus data stays on your computer.</p>
+        </div>
+        <div class="hero-side">
+          <p data-reveal>Choose a Canvas assignment or type a goal, start the timer, and Locken closes <span class="sr-only">games, social media and YouTube</span><span class="typewriter" aria-hidden="true" data-type="games|social media|YouTube">games, social media and YouTube</span> until you're done.</p>
+          <div class="btn-row" data-reveal>
+            <a class="btn btn-light" href="/Locken.dmg" download data-download>Download for Mac <span class="arrow" aria-hidden="true"></span></a>
+            <a class="btn btn-glass" href="#how">See how it works</a>
+          </div>
+          <p class="eyebrow term-label" data-reveal>Start in three clicks</p>
+          <div class="term" data-reveal>
+            <div class="term-tabs" role="tablist" aria-label="Your computer">
+              <button role="tab" aria-selected="true" data-os="mac">macOS</button>
+              <button role="tab" aria-selected="false" data-os="win">Windows</button>
+            </div>
+            <p class="term-line" data-term="mac">open Locken.dmg → drag to Applications → Start</p>
+            <p class="term-line" data-term="win" hidden>run Locken-Setup.exe → sign in → Start</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- The session -->
+      <section class="session" id="session">
+        <div class="session-panel glass">
+          <div>
+            <p class="eyebrow" data-reveal>The session</p>
+            <h2 data-split>One goal. One timer. Nothing else open.</h2>
+            <a class="btn btn-light" href="/Locken.dmg" download data-download>Download for Mac <span class="arrow" aria-hidden="true"></span></a>
+          </div>
+          <p class="session-text" data-reveal>Locken turns what you're working on into a timed session with <span class="sr-only">steps to tick off, check-ins that adjust the time, and a Shield that keeps distracting apps and sites closed until the timer ends.</span><span class="typewriter" aria-hidden="true" data-type="steps to tick off.|check-ins that adjust the time.|a Shield that keeps distractions closed.">steps, check-ins and a Shield that keeps distracting apps and sites closed until the timer ends.</span></p>
+        </div>
+      </section>
+
+      <!-- Works with -->
+      <section class="works divided" aria-labelledby="works-title">
+        <p class="eyebrow center" data-reveal>Works with</p>
+        <h2 id="works-title" class="center" data-split>Built around the apps students already use.</h2>
+        <!-- React Bits LogoLoop (src/site/connectors.jsx) replaces this static row once the page script runs. -->
+        <div class="connectors" id="connectors" data-reveal>
+        <ul class="logo-row">
+          <li class="glass"><span class="canvas-icon" aria-hidden="true"></span><span class="logo-name">Canvas</span></li>
+          <li class="glass"><span class="cal-icon" aria-hidden="true"><b>OCT</b><i>17</i></span><span class="logo-name">Calendar</span></li>
+          <li class="glass"><span class="rem-icon" aria-hidden="true"><i></i><i></i><i></i></span><span class="logo-name">Reminders</span></li>
+          <li class="glass"><span class="notes-icon" aria-hidden="true"></span><span class="logo-name">Notes</span></li>
+          <li class="glass"><img src="/logos/safari.svg" alt="" /><span class="logo-name">Safari</span></li>
+          <li class="glass"><img src="/logos/chrome.svg" alt="" /><span class="logo-name">Chrome</span></li>
+          <li class="glass"><img src="/logos/spotify.svg" alt="" /><span class="logo-name">Spotify</span></li>
+        </ul>
+        </div>
+        <p class="connectors-note center">Logos belong to their owners and show only which services Locken connects to. Locken isn't affiliated with or endorsed by them. Some connections are Mac only for now.</p>
+      </section>
+
+      <!-- Features -->
+      <section class="features divided" id="features">
+        <p class="eyebrow center" data-reveal>Features</p>
+        <h2 class="center" data-split>Everything a study session needs, and nothing it doesn't.</h2>
+        <div class="feature-grid" data-stagger>
+          <article class="feature glass">
+            <div class="feature-shot timer-shot" aria-hidden="true">
+              <div class="timer-ring"><span>24:55</span></div>
+              <div class="timer-controls"><span>Back</span><span class="pause">Pause</span><span>End</span></div>
+            </div>
+            <h3>The Shield</h3>
+            <p>Games, social media and YouTube close the moment they open. A video your class needs can still play.</p>
+          </article>
+          <article class="feature glass">
+            <div class="feature-shot steps-shot" aria-hidden="true">
+              <p class="steps-title">Steps for this session</p>
+              <ul>
+                <li class="done">Read the prompt and the rubric</li>
+                <li>Outline three body paragraphs</li>
+                <li>Draft the introduction</li>
+                <li>Check citations</li>
+              </ul>
+            </div>
+            <h3>Steps for every session</h3>
+            <p>Break the goal into steps and tick them off. With your own Claude or Gemini key (18+), Locken can suggest them.</p>
+          </article>
+          <article class="feature glass">
+            <div class="feature-shot usage-shot" aria-hidden="true">
+              <div class="usage-tabs"><span class="on">Today</span><span>Week</span><span>Month</span></div>
+              <div class="usage-bars">
+                <i style="--h:22%"></i><i style="--h:38%"></i><i style="--h:18%"></i><i style="--h:62%"></i><i style="--h:88%"></i><i style="--h:44%"></i><i style="--h:28%"></i><i style="--h:70%"></i><i style="--h:34%"></i><i style="--h:52%"></i>
+              </div>
+              <div class="usage-rows"><span></span><span></span><span></span></div>
+            </div>
+            <h3>Where your time went</h3>
+            <p>Focus time and screen usage, kept on your Mac, so you can see what actually happened.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- Inside Locken: bento -->
+      <section class="inside divided" id="inside">
+        <div class="section-head">
+          <p class="eyebrow" data-reveal>Inside Locken</p>
+          <h2 data-split>Made for the way students actually study.</h2>
+        </div>
+        <div class="bento" data-stagger>
+          <article class="tile glass tile-canvas">
+            <div class="tile-copy">
+              <h3>Canvas, ready to start</h3>
+              <p>Link Canvas once. Upcoming assignments show up, and any one of them becomes a session in a click.</p>
+            </div>
+            <ul class="assignments" aria-hidden="true">
+              <li><span class="dot" style="--c:#a597ff"></span><span class="assignment"><b>Essay draft</b><em>English 10 · due Fri</em></span><span class="pill">Start</span></li>
+              <li><span class="dot" style="--c:#7cc4ff"></span><span class="assignment"><b>Unit 1 review</b><em>Precalculus · due Mon</em></span><span class="pill">Start</span></li>
+              <li><span class="dot" style="--c:#ff9ee3"></span><span class="assignment"><b>Lab report</b><em>Chemistry · due Wed</em></span><span class="pill">Start</span></li>
+            </ul>
+          </article>
+          <article class="tile glass tile-checkin">
+            <div class="tile-copy">
+              <h3>Check-ins</h3>
+              <p>A small prompt drops from the top of the screen and asks how far along you are. Adaptive time adjusts what's left.</p>
+            </div>
+            <div class="notch" aria-hidden="true"><span class="notch-dot"></span><span>How far into your goal?</span><span class="notch-bar"><i></i></span></div>
+          </article>
+          <article class="tile glass tile-video">
+            <div class="mini-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 7.5v9l7.5-4.5z" /></svg></div>
+            <div class="tile-copy">
+              <h3>Class videos</h3>
+              <p>Paste the link and only that video plays.</p>
+            </div>
+          </article>
+          <article class="tile glass tile-dnd">
+            <div class="mini-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.5 4.5a7.5 7.5 0 1 0 5 13.1A6.5 6.5 0 0 1 14.5 4.5z" /></svg></div>
+            <div class="tile-copy">
+              <h3>Do Not Disturb</h3>
+              <p>Notifications go quiet while the timer runs.</p>
+            </div>
+          </article>
+          <article class="tile glass tile-habits">
+            <div class="tile-copy">
+              <h3>Habits and focus streaks</h3>
+              <p>Keep the routines that help you study, and watch your focus time add up across the week.</p>
+            </div>
+            <div class="habit-viz" aria-hidden="true">
+              <svg class="ring-viz" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" /><circle class="ring-fill" cx="32" cy="32" r="26" /></svg>
+              <svg class="spark" viewBox="0 0 160 48" preserveAspectRatio="none"><path d="M0 40 L20 34 L40 37 L60 24 L80 28 L100 14 L120 19 L140 8 L160 12" /></svg>
+            </div>
+          </article>
+          <article class="tile glass tile-notes">
+            <div class="mini-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4h9l3 3v13H6z M9 10h6 M9 13.5h6 M9 17h4" /></svg></div>
+            <div class="tile-copy">
+              <h3>Notes and Reminders</h3>
+              <p>Your Apple Notes and Reminders, right inside Locken.</p>
+            </div>
+          </article>
+          <article class="tile glass tile-private">
+            <div class="mini-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5 M6.5 10.5h11v9h-11z" /></svg></div>
+            <div class="tile-copy">
+              <h3>Private by design</h3>
+              <p>No ads and no tracking. Focus data stays on your Mac.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- How it works -->
+      <section class="how divided" id="how" aria-labelledby="how-title">
+        <div class="section-head">
+          <p class="eyebrow" data-reveal>How it works</p>
+          <h2 id="how-title" data-split>From open to locked in, in three steps.</h2>
+        </div>
+        <ol class="steps" data-stagger>
+          <li class="step glass">
+            <span class="step-num">01</span>
+            <h3>Choose what you're working on</h3>
+            <p>Pick a Canvas assignment or type your own goal. Add steps before you start if you like.</p>
+          </li>
+          <li class="step glass">
+            <span class="step-num">02</span>
+            <h3>Set where and how long</h3>
+            <p>Choose the app you'll work in, from Chrome to Xcode or one you add yourself, and a length for the timer.</p>
+          </li>
+          <li class="step glass">
+            <span class="step-num">03</span>
+            <h3>Start and stay with it</h3>
+            <p>The Shield turns on, check-ins keep you honest, and the timer shows exactly how much is left.</p>
+          </li>
+        </ol>
+      </section>
+
+      <!-- Free and private, with the glowing ring -->
+      <section class="welcome divided" aria-labelledby="welcome-title">
+        <canvas id="ring" class="ring-canvas" aria-hidden="true"></canvas>
+        <div class="welcome-copy">
+          <p class="eyebrow" data-reveal>Free. Private. Native.</p>
+          <h2 id="welcome-title" data-split>A focus app that respects your attention and your data.</h2>
+        </div>
+        <div class="stats" data-stagger>
+          <div class="stat glass stat-light"><strong>Free</strong><span>No ads and no subscription</span></div>
+          <div class="stat glass"><strong>0</strong><span>Trackers, analytics or ads</span></div>
+          <div class="stat glass"><strong data-count="100" data-suffix="%">100%</strong><span>Of your focus data stays on your Mac</span></div>
+          <div class="stat glass"><strong>macOS</strong><span>Built natively for Mac</span></div>
+        </div>
+      </section>
+
+      <!-- FAQ (Hermes-style open/close list) -->
+      <section class="faq divided" id="faq" aria-labelledby="faq-title">
+        <div class="faq-head">
+          <h2 id="faq-title" data-split>FAQs</h2>
+          <a class="btn btn-glass" href="/privacy">Privacy policy</a>
+        </div>
+        <div class="faq-list">
+          <details><summary>How much does Locken cost?</summary><p>Nothing. Locken is free, with no ads, no subscription and no card.</p></details>
+          <details><summary>What does the Shield close?</summary><p>Games, social media and YouTube, from the moment a session starts until the timer ends. Work apps stay open, and you can add or unblock apps yourself.</p></details>
+          <details><summary>Which computers does it run on?</summary><p>Macs with macOS 15 or later (Apple silicon or Intel) and 64-bit Windows 10 or 11.</p></details>
+          <details><summary>Does my data leave my computer?</summary><p>Your focus history, notes, habits and Canvas assignments stay on your computer. Our servers hold your account, profile and any feedback you send. The Privacy Policy lists every service Locken talks to.</p></details>
+          <details><summary>Do I need an AI key?</summary><p>No. Everything works without one. With your own Claude, ChatGPT or Gemini key (18+), Locken can rewrite goals, suggest steps, plan your week and talk with you.</p></details>
+          <details><summary>Can I stop a session early?</summary><p>Yes. With Commitment mode on, ending, pausing or quitting waits a few seconds first, so stopping is a choice, not a reflex.</p></details>
+        </div>
+      </section>
+
+      <!-- Download and footer -->
+      <section class="cta divided" id="download">
+        <canvas id="ring2" class="ring-canvas" aria-hidden="true"></canvas>
+        <div class="cta-copy">
+          <h2 data-split>Your next session starts here.</h2>
+          <div class="btn-row" data-reveal>
+            <a class="btn btn-light" href="/Locken.dmg" download data-download>Download for Mac <span class="arrow" aria-hidden="true"></span></a>
+            <a class="btn btn-glass" href="#how">How it works</a>
+          </div>
+          <p class="cta-note" data-reveal data-download-note>Free. Requires macOS 15 or later, on Apple silicon or Intel.</p>
+          <p class="cta-note" data-reveal><a class="cta-alt" href="/Locken-Setup.exe" download data-download-alt>Also for Windows</a></p>
+        </div>
+        <footer class="footer">
+          <div>
+            <p class="footer-brand"><img src="/locken-logo.png" alt="" width="28" height="28" />Locken</p>
+            <a href="mailto:daanu.focus@gmail.com"><span class="u-out-in u-left">daanu.focus@gmail.com</span></a>
+            <p class="footer-fine">© 2026 Locken. Free for Mac and Windows.</p>
+            <p class="footer-fine">Canvas, Safari, Chrome and Spotify are trademarks of their owners. Locken isn't affiliated with them.</p>
+          </div>
+          <nav aria-label="Footer">
+            <p class="footer-head">Locken</p>
+            <a href="#session"><span class="u-center">The session</span></a>
+            <a href="#features"><span class="u-center">Features</span></a>
+            <a href="#inside"><span class="u-center">Inside Locken</span></a>
+            <a href="/Locken.dmg" download data-download-plain><span class="u-center">Download</span></a>
+          </nav>
+          <nav aria-label="Legal">
+            <p class="footer-head">Legal</p>
+            <a href="/terms"><span class="u-in-out u-right">Terms of Service</span></a>
+            <a href="/privacy"><span class="u-in-out u-left">Privacy Policy</span></a>
+            <a href="/acceptable-use"><span class="u-in-out u-right">Acceptable Use</span></a>
+            <a href="/credits"><span class="u-in-out u-left">Credits &amp; licenses</span></a>
+          </nav>
+        </footer>
+        <p class="footer-wordmark" aria-hidden="true"><span>Locken</span></p>
+      </section>
+    </main>
+
+    <script type="module" src="/src/site/main.js"></script>
+  </body>
+</html>

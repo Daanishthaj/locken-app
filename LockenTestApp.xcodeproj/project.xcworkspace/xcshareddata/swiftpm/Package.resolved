@@ -1,0 +1,15 @@
+{
+  "originHash" : "9d6b3b821ddc9edb9e6425b344adccbd4deb9a80b0e11ea03cde2bd5424e040e",
+  "pins" : [
+    {
+      "identity" : "swift-bart-g2p",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Jud/swift-bart-g2p.git",
+      "state" : {
+        "revision" : "1ed781e05fba7b4042212aecb6124a3aab83ce45",
+        "version" : "0.4.0"
+      }
+    }
+  ],
+  "version" : 3
+}

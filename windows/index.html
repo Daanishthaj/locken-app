@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Locken</title>
+<link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+<canvas class="fibers" id="fibers" aria-hidden="true"></canvas>
+<div class="app">
+
+  <!-- Sign in / create account (same layout as the Mac app) -->
+  <section class="screen auth-screen" id="screen-auth" hidden>
+    <div class="login-column">
+      <div class="wordmark">
+        <p class="script">Locken</p>
+        <p class="tagline">Deep work, on your terms.</p>
+      </div>
+      <div class="login-card" id="auth-card">
+        <div class="pills" role="radiogroup" aria-label="Sign in or create an account">
+          <button type="button" class="pill" role="radio" aria-checked="true" data-mode="signin">Sign In</button>
+          <button type="button" class="pill" role="radio" aria-checked="false" data-mode="signup">Create Account</button>
+        </div>
+        <form id="auth-form" novalidate>
+          <label class="field"><span class="field-label">EMAIL</span><input id="auth-email" type="email" autocomplete="username" maxlength="254" placeholder="Enter your email" required></label>
+          <label class="field"><span class="field-label">PASSWORD</span><input id="auth-password" type="password" autocomplete="current-password" maxlength="128" placeholder="Your password" required></label>
+          <div class="forgot-row" id="forgot-row"><button class="link" id="forgot" type="button">Forgot password?</button></div>
+          <div id="birth-fields" hidden>
+            <span class="field-label">DATE OF BIRTH</span>
+            <div class="birth-row">
+              <select id="birth-month" aria-label="Birth month"><option value="">Month</option><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select>
+              <input id="birth-year" inputmode="numeric" maxlength="4" placeholder="Year" aria-label="Birth year">
+            </div>
+          </div>
+          <div class="consent" id="consent-fields" hidden>
+            <label class="check"><input type="checkbox" id="agree-terms"><span>I agree to the <a href="https://locken-app.vercel.app/terms" target="_blank" rel="noopener">Terms of Service</a> and <a href="https://locken-app.vercel.app/privacy" target="_blank" rel="noopener">Privacy Policy</a></span></label>
+            <label class="check" id="guardian-row" hidden><input type="checkbox" id="agree-guardian"><span>My parent or guardian has read the <a href="https://locken-app.vercel.app/terms" target="_blank" rel="noopener">Terms of Service</a> and agrees to them</span></label>
+          </div>
+          <p class="error" id="auth-error" role="alert"></p>
+          <p class="notice" id="auth-notice" role="status"></p>
+          <button class="primary" id="auth-submit" type="submit">Sign In</button>
+        </form>
+        <div class="or"><span></span>or<span></span></div>
+        <button class="google" id="google" type="button"><span class="g">G</span>Continue with Google</button>
+        <div class="legal">
+          <p id="legal-signin">By signing in, you agree to the <a href="https://locken-app.vercel.app/terms" target="_blank" rel="noopener">Terms of Service</a> and <a href="https://locken-app.vercel.app/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</p>
+          <p>Your session is kept in Windows Credential Manager.</p>
+        </div>
+      </div>
+    </div>
+    <!-- Same notice as the Mac app before Google's own page -->
+    <div class="dialog-backdrop" id="google-info" hidden>
+      <div class="login-card dialog" role="dialog" aria-modal="true" aria-labelledby="google-info-title">
+        <h2 id="google-info-title">Continue with Google?</h2>
+        <p class="body">Google will share your name, email address and profile picture with Locken. They're used only to create your Locken account and sign you in, never for ads, and Locken gets nothing else from your Google account. New accounts are asked their age and to agree to the Terms before using Locken.</p>
+        <button class="primary" id="google-continue" type="button">Continue</button>
+        <button class="link center" id="google-cancel" type="button">Cancel</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Emailed code -->
+  <!-- Second step for accounts with an authenticator app (the Mac app's code card). -->
+  <section class="screen auth-screen" id="screen-mfa" hidden>
+    <div class="login-column">
+      <div class="login-card">
+        <h2>Enter your code</h2>
+        <p class="body">Open your authenticator app (e.g. Google Authenticator) and type the 6-digit code for Locken.</p>
+        <form id="mfa-form" novalidate>
+          <input class="code-input" id="mfa-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code" aria-label="Authenticator code" required>
+          <p class="error" id="mfa-error" role="alert"></p>
+          <button class="primary" id="mfa-submit" type="submit">Continue</button>
+        </form>
+        <button class="link center" id="mfa-back" type="button">Sign out</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen auth-screen" id="screen-code" hidden>
+    <div class="login-column">
+      <div class="login-card">
+        <h2>Check your email</h2>
+        <p class="body" id="code-hint"></p>
+        <form id="code-form" novalidate>
+          <input class="code-input" id="code-input" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="6-digit code" aria-label="Code" required>
+          <p class="error" id="code-error" role="alert"></p>
+          <p class="notice" id="code-notice" role="status"></p>
+          <button class="primary" id="code-submit" type="submit">Continue</button>
+        </form>
+        <button class="link center" id="code-resend" type="button">Send a new code</button>
+        <button class="link center" id="code-back" type="button">Use a different email</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Forgot password: emailed code, then the new password -->
+  <section class="screen auth-screen" id="screen-reset" hidden>
+    <div class="login-column">
+      <div class="login-card">
+        <h2 id="reset-title">Check your email</h2>
+        <p class="body" id="reset-hint"></p>
+        <form id="reset-code-form" novalidate>
+          <input class="code-input" id="reset-code" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="6-digit code" aria-label="Code">
+        </form>
+        <form id="reset-password-form" novalidate hidden>
+          <label class="field"><span class="field-label">NEW PASSWORD</span><input id="reset-password" type="password" autocomplete="new-password" maxlength="128" placeholder="At least 8 characters"></label>
+        </form>
+        <p class="error" id="reset-error" role="alert"></p>
+        <button class="primary" id="reset-submit" type="button">Continue</button>
+        <button class="link center" id="reset-back" type="button">Back to sign in</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Age check after signing in on this PC -->
+  <section class="screen" id="screen-age" hidden>
+    <div class="card narrow">
+      <h1>One more step</h1>
+      <p class="muted">Before you start, tell us your date of birth and agree to Locken's terms. Locken is for people 13 and older.</p>
+      <form id="age-form" novalidate>
+        <div class="birth-row">
+          <label>Month<select id="age-month"><option value="">Month</option><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></label>
+          <label>Year<input id="age-year" inputmode="numeric" maxlength="4" placeholder="2008"></label>
+        </div>
+        <div class="consent">
+          <label class="check"><input type="checkbox" id="age-agree-terms"><span>I agree to the <a href="https://locken-app.vercel.app/terms" target="_blank" rel="noopener">Terms of Service</a> and <a href="https://locken-app.vercel.app/privacy" target="_blank" rel="noopener">Privacy Policy</a></span></label>
+          <label class="check" id="age-guardian-row" hidden><input type="checkbox" id="age-agree-guardian"><span>My parent or guardian has read the <a href="https://locken-app.vercel.app/terms" target="_blank" rel="noopener">Terms of Service</a> and agrees to them</span></label>
+        </div>
+        <p class="error" id="age-error" role="alert"></p>
+        <button class="btn" id="age-submit" type="submit">Continue</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Delete account -->
+  <section class="screen" id="screen-delete" hidden>
+    <div class="card narrow">
+      <h1>Delete your account?</h1>
+      <p>This permanently deletes your Locken account from our servers, signs you out everywhere and erases this account's data on this PC. It can't be undone.</p>
+      <p class="error" id="delete-error" role="alert"></p>
+      <button class="btn danger" id="delete-confirm" type="button">Delete my account</button>
+      <button class="quiet" id="delete-cancel" type="button">Keep my account</button>
+    </div>
+  </section>
+
+  <!-- Under 13 -->
+  <section class="screen" id="screen-too-young" hidden>
+    <div class="card narrow center">
+      <h1>Locken is for people 13 and older</h1>
+      <p>Thanks for your interest. You can use Locken once you're 13.</p>
+    </div>
+  </section>
+
+  <!-- The app: sidebar and pages, laid out like the Mac app -->
+  <section class="screen shell" id="screen-main" hidden>
+    <nav class="sidebar" aria-label="Locken">
+      <!-- One button that stays put as the sidebar folds: its panel morphs from wide to narrow, and it slides from the header to the bottom of the rail. -->
+      <button class="side-toggle" id="side-toggle" type="button" aria-label="Collapse the sidebar" aria-expanded="true" title="Collapse the sidebar"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="toggle-outer" d="M11 3 H13 C16.7712 3 18.6569 3 19.8284 4.17157 C21 5.34315 21 7.22876 21 11 V13 C21 16.7712 21 18.6569 19.8284 19.8284 C18.6569 21 16.7712 21 13 21 H11 C7.2288 21 5.3431 21 4.1716 19.8284 C3 18.6569 3 16.7712 3 13 V11 C3 7.22876 3 5.34315 4.1716 4.17157 C5.3431 3 7.2288 3 11 3 Z"/><path class="toggle-panel"/></svg></button>
+      <div class="side-brand">
+        <img src="/locken-logo.png" alt="" width="32" height="32">
+        <div><p class="side-name">Locken</p><p class="side-sub">Focus for Windows</p></div>
+      </div>
+      <button class="nav-item" data-page="dashboard" type="button"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span>New</button>
+      <div class="side-divider"></div>
+      <button class="nav-item" data-page="focus" type="button"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3 5 14h6l-1 7 8-11h-6z"/></svg></span>Focus Session<span class="nav-live" id="nav-live" hidden></span></button>
+      <button class="nav-item" data-page="habits" type="button"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21c-4 0-7-2.7-7-6.5C5 10 9 8 9 4c3 1.5 4.5 4 4.5 6 1-1 1.5-2 1.5-3 2.5 2 4 4.6 4 7.5C19 18.3 16 21 12 21z"/></svg></span>Habit Tracker</button>
+      <button class="nav-item" data-page="analytics" type="button"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></span>Analytics</button>
+      <button class="nav-item" data-page="notes" type="button"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span>Notes</button>
+      <button class="nav-item" data-page="settings" type="button"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></span>Settings</button>
+      <!-- Collapsed: the pages as React Bits GlassIcons buttons (the Mac app's SidebarRail). Loaded the first time it opens. -->
+      <iframe class="rail-icons" id="rail-icons" data-src="/glassicons/glassicons.html" title="Pages"></iframe>
+      <!-- Settings, kept apart at the bottom of the rail (the Mac keeps Settings and Admin there). -->
+      <iframe class="rail-icons rail-icons-bottom" id="rail-icons-bottom" data-src="/glassicons/glassicons.html" title="Settings"></iframe>
+      <div class="side-spacer"></div>
+      <!-- The Mac app's SidebarProfileCard (React Bits ProfileCard): name, account, and what's playing. -->
+      <iframe class="profile-card" id="profile-card" src="/profile/profile.html" title="Profile and now playing"></iframe>
+    </nav>
+
+    <main class="pages">
+      <!-- New (the Mac app's TestDashboardView): greeting, plasma ring with four glass boxes, session setup -->
+      <section class="page" id="page-dashboard">
+        <header class="dash-greeting">
+          <p class="greet-line"><span class="greet-lead">What's up next,</span> <span class="script greet-name" id="greeting-name">today?</span></p>
+          <p class="saved-line"><span class="saved-dot"></span>Saved on this PC</p>
+        </header>
+
+        <div class="orbital" id="orbital">
+          <iframe class="plasma" id="plasma" src="/plasma/plasma.html" title="" aria-hidden="true" tabindex="-1"></iframe>
+          <button class="anno" type="button" data-metric="Focus" style="left:26%;top:14%">Focus</button>
+          <button class="anno" type="button" data-metric="Habits" style="left:74%;top:28%">Habits</button>
+          <button class="anno" type="button" data-metric="Sessions" style="left:22%;top:72%">Sessions</button>
+          <button class="anno" type="button" data-metric="Momentum" style="left:78%;top:88%">Momentum</button>
+          <div class="metric-card" id="metric-card" hidden>
+            <div class="metric-head"><h2 id="metric-title">Focus</h2><button class="metric-close" id="metric-close" type="button" aria-label="Close">✕</button></div>
+            <div class="metric-body" id="metric-body"></div>
+          </div>
+        </div>
+
+        <div class="setup-card card">
+          <form id="setup-form" novalidate>
+            <div class="setup-section">
+              <div class="setup-row"><span class="section-label">What are you working on?</span>
+                <div class="pills goal-source" role="radiogroup" aria-label="Goal source">
+                  <button class="pill" type="button" role="radio" data-source="canvas" aria-checked="false">Canvas Assignment</button>
+                  <button class="pill" type="button" role="radio" data-source="manual" aria-checked="true">My Own Goal</button>
+                </div>
+              </div>
+              <!-- Canvas Assignment: link Canvas, or pick from a searchable list (the Mac's AssignmentPickerPopover). -->
+              <div id="goal-canvas" hidden>
+                <div class="field-bg canvas-link-row" id="canvas-link-row">
+                  <svg class="nav-svg accent-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5zM6 11v5c3 2 9 2 12 0v-5"/></svg>
+                  <div><p class="canvas-link-title">Link Canvas to pick an assignment</p><p class="fine">Uses your Canvas access token or calendar feed, stored in Windows Credential Manager.</p></div>
+                  <button class="primary pill-btn small-pill canvas-open-link" type="button">Link Canvas</button>
+                </div>
+                <div class="canvas-picker" id="canvas-picker" hidden>
+                  <button class="field-bg canvas-choose" id="canvas-choose" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Canvas assignment">
+                    <svg class="nav-svg accent-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5zM6 11v5c3 2 9 2 12 0v-5"/></svg>
+                    <span class="canvas-choose-text"><span id="canvas-choose-title">Choose a Canvas assignment</span><span class="fine" id="canvas-choose-sub"></span></span>
+                    <svg class="nav-svg small-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>
+                  </button>
+                  <div class="canvas-pop" id="canvas-pop" hidden>
+                    <div class="canvas-pop-head"><input id="canvas-search" placeholder="Search assignments or courses" aria-label="Search assignments or courses"><button class="icon-btn canvas-refresh" type="button" title="Refresh from Canvas" aria-label="Refresh assignments"><svg class="nav-svg small-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg></button></div>
+                    <p class="canvas-error" id="canvas-pop-error" hidden></p>
+                    <ul class="canvas-list" id="canvas-list" role="listbox" aria-label="Canvas assignments"></ul>
+                  </div>
+                </div>
+              </div>
+              <div class="field-bg goal-field"><input id="goal" maxlength="200" placeholder="e.g. Write the introduction for my history paper" aria-label="Session goal">
+                <button class="rephrase-btn" id="rephrase" type="button" title="Intelligent Rephrase: turn a vague goal into a specific one" aria-label="Intelligent Rephrase" hidden disabled><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8zM18.5 15l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg></button>
+              </div>
+              <p class="rephrase-error" id="rephrase-error" role="alert" hidden><span id="rephrase-error-text"></span> <button class="link inline-link" id="rephrase-settings" type="button" hidden>Open Settings</button></p>
+            </div>
+            <div class="section-divider"></div>
+            <div class="setup-section">
+              <div class="section-head-row"><span class="section-label">Where you'll work</span><button class="link" id="lineup-edit" type="button">Edit apps…</button></div>
+              <div class="workspace-row">
+                <iframe class="electric" id="electric" src="/electric/electric.html" title="" aria-hidden="true" tabindex="-1"></iframe>
+                <div class="workspace-tiles" id="workspace-tiles" role="radiogroup" aria-label="Where you'll work"></div>
+              </div>
+            </div>
+            <div class="section-divider"></div>
+            <div class="setup-section">
+              <div class="setup-row"><span class="section-label">How long</span><span class="duration"><b id="length-value">25</b> min</span></div>
+              <input type="range" id="length" min="5" max="180" step="5" value="25" aria-label="Session length in minutes">
+              <div class="adaptive-row">
+                <div><p class="adaptive-title">Adaptive time</p><p class="adaptive-sub">Start with this length. At each check-in, the time left adjusts to how far into your goal you are.</p></div>
+                <label class="switch"><input type="checkbox" class="adaptive-toggle" id="adaptive-setup" aria-label="Adaptive time"><span></span></label>
+              </div>
+            </div>
+            <div class="setup-foot">
+              <span class="setup-hint" id="setup-hint">Type what you're working on to start</span>
+              <button class="primary start" id="start" type="submit" disabled>▶ Start 25 min</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Focus Session (the Mac app's TestFocusSessionView and FocusCountdownView) -->
+      <section class="page" id="page-focus" hidden>
+        <div class="focus-idle" id="focus-idle">
+          <header class="page-head">
+            <h1 class="script page-cursive">Focus Enclave</h1>
+            <p class="page-sub">Deep work session with an optional distraction shield.</p>
+            <p class="shield-label"><svg class="nav-svg small-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v6c0 4.2 3 7.6 7 9 4-1.4 7-4.8 7-9V6z"/></svg>Shield Engaged</p>
+          </header>
+          <div class="focus-split">
+            <iframe class="dither" src="/dither/dither.html" title="" aria-hidden="true" tabindex="-1"></iframe>
+            <div class="focus-cards">
+              <div class="card timer-card">
+                <div class="timer-big" id="idle-time">25:00</div>
+                <p class="timer-goal muted-goal">No goal set yet</p>
+                <button class="primary pill-btn" id="focus-new" type="button">▶ Start Focus</button>
+                <div class="adaptive-row">
+                  <div><p class="adaptive-title">Adaptive time</p><p class="adaptive-sub">Start with this length. At each check-in, the time left adjusts to how far into your goal you are.</p></div>
+                  <label class="switch"><input type="checkbox" class="adaptive-toggle" id="adaptive-focus" aria-label="Adaptive time"><span></span></label>
+                </div>
+              </div>
+              <form class="card own-goal-card" id="own-goal-form" novalidate>
+                <p class="mini-label">YOUR OWN GOAL</p>
+                <div class="field-bg"><input id="own-goal" maxlength="200" placeholder="e.g. Write the introduction for my history paper" aria-label="Your own goal"></div>
+                <div class="limit-row"><p class="mini-label">TIME LIMIT</p><b id="own-minutes-value">25 min</b></div>
+                <input type="range" id="own-minutes" min="5" max="180" step="5" value="25" aria-label="Time limit in minutes">
+                <div class="own-foot"><button class="primary pill-btn" id="own-start" type="submit" disabled>▶ Start 25 min focus</button></div>
+              </form>
+              <!-- The Mac app's CanvasAssignmentsCard: pick an assignment, set a time limit, start. -->
+              <div class="card canvas-card" id="canvas-card">
+                <div class="canvas-card-head">
+                  <p class="mini-label">CANVAS ASSIGNMENTS</p>
+                  <span class="canvas-card-actions" id="canvas-card-actions" hidden>
+                    <button class="icon-btn canvas-refresh" type="button" title="Refresh assignments" aria-label="Refresh assignments"><svg class="nav-svg small-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg></button>
+                    <button class="link canvas-unlink" type="button" aria-label="Unlink Canvas">Unlink</button>
+                  </span>
+                </div>
+                <div id="canvas-card-body"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="focus-live" id="focus-live" hidden>
+          <div class="live-head">
+            <p class="working-on">Working on</p>
+            <p class="script live-goal" id="session-goal"></p>
+          </div>
+          <div class="live-row">
+            <div class="timer-column">
+              <div class="dial" id="dial">
+                <div class="second-dot" id="second-dot"></div>
+                <svg class="ring" viewBox="0 0 300 300" aria-hidden="true">
+                  <circle cx="150" cy="150" r="145" class="ring-track"></circle>
+                  <circle cx="150" cy="150" r="145" class="ring-fill" id="ring-fill"></circle>
+                </svg>
+                <div class="ring-center">
+                  <div class="timer" id="timer" role="timer" aria-live="off">25:00</div>
+                  <div class="timer-glass" id="timer-glass" aria-hidden="true"></div>
+                  <p class="ring-goal" id="ring-goal"></p>
+                </div>
+              </div>
+              <div class="live-actions">
+                <button class="primary pill-btn" id="pause-toggle" type="button">❚❚ Pause</button>
+                <button class="link" id="reset-session" type="button">Reset</button>
+                <button class="link" id="end-early" type="button">■ End</button>
+              </div>
+              <p class="time-adjustment" id="time-adjustment" hidden></p>
+            </div>
+            <div class="live-side">
+              <div class="card session-stats">
+                <div class="sstat"><b id="stat-focused">0:00</b><span>Focused</span></div>
+                <div class="sstat-line"></div>
+                <div class="sstat"><b id="stat-blocked-now">0</b><span>Blocked</span></div>
+                <div class="sstat-line"></div>
+                <div class="sstat"><b id="stat-ends">--</b><span>Ends</span></div>
+              </div>
+              <!-- The Mac app's FocusMilestonesCard: steps for this session (planned by time). -->
+              <div class="card steps-card">
+                <p class="steps-title">Steps for this session</p>
+                <p class="fine" id="steps-summary">Steps for your session appear here when it starts. Add your own below.</p>
+                <p class="fine steps-note" id="steps-note" hidden></p>
+                <ul class="steps" id="steps" aria-label="Steps for this session"></ul>
+                <form class="step-add" id="step-add" novalidate>
+                  <input id="step-new" maxlength="200" placeholder="Add new milestone..." aria-label="New milestone">
+                  <button class="step-add-btn" id="step-add-btn" type="submit" aria-label="Add milestone" disabled><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></button>
+                </form>
+              </div>
+              <div class="card checkin-card">
+                <p class="mini-label">CHECK-INS</p>
+                <p class="fine" id="session-blocked">Nothing closed yet.</p>
+                <ul class="checkins" id="checkins" aria-label="Check-ins"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Habit Tracker (the Mac app's HabitTrackerView) -->
+      <section class="page" id="page-habits" hidden>
+        <header class="page-head">
+          <h1 class="script page-cursive">Habit Tracker</h1>
+          <p class="page-sub" id="habit-summary">Build routines that stick. Everything stays on this PC.</p>
+          <button class="primary pill-btn small-pill" id="habit-new" type="button">+ New Habit</button>
+        </header>
+        <!-- The Mac app's HabitSetupCard: first visit, choose features and whether to start with examples. -->
+        <div class="card habit-setup" id="habit-setup" hidden>
+          <div><p class="setting-title">Set up your Habit Tracker</p><p class="fine">Choose what you'd like to use. You can change this anytime in Settings.</p></div>
+          <div class="habit-features" id="habit-setup-features"></div>
+          <div class="habit-setup-foot"><div class="pills he-pills" id="habit-setup-start" role="radiogroup" aria-label="Starting habits"></div><button class="primary pill-btn" id="habit-setup-continue" type="button">Continue</button></div>
+        </div>
+        <div class="card empty-card" id="habits-empty">
+          <svg class="nav-svg accent-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/></svg>
+          <p class="empty-title">No habits yet</p>
+          <p class="page-sub">Start with one small thing you want to do most days.</p>
+        </div>
+        <div class="card today-card" id="today-card" hidden>
+          <p class="today-label"><span class="mini-label">TODAY</span><span class="fine" id="today-date"></span></p>
+          <div class="today-row">
+            <div class="today-ring">
+              <svg viewBox="0 0 104 104" aria-hidden="true"><circle cx="52" cy="52" r="47" class="ring-track"></circle><circle cx="52" cy="52" r="47" class="ring-fill" id="today-ring"></circle></svg>
+              <div class="today-ring-text"><b id="today-count">0/0</b><span>done</span></div>
+            </div>
+            <div class="today-pills" id="today-pills"></div>
+          </div>
+        </div>
+        <div class="card week-card" id="week-card" hidden>
+          <div class="week-head">
+            <span class="mini-label" id="week-title">THIS WEEK</span>
+            <button class="week-arrow" id="week-prev" type="button" aria-label="Previous week">‹</button>
+            <button class="week-arrow" id="week-next" type="button" aria-label="Next week">›</button>
+            <button class="link accent-link" id="week-now" type="button" hidden>This week</button>
+            <span class="week-spacer"></span>
+            <div class="week-days" id="week-days"></div>
+          </div>
+          <div class="habit-rows" id="habit-list"></div>
+        </div>
+        <!-- The Mac app's HabitEditorSheet: name, icon, category, schedule, daily goal, tracking. -->
+        <div class="dialog-backdrop" id="habit-editor" hidden>
+          <form class="login-card dialog habit-editor" id="habit-form" novalidate>
+            <h2 id="habit-editor-title">New Habit</h2>
+            <div class="he-section"><p class="mini-label">NAME</p><input id="habit-name" class="he-input" maxlength="60" placeholder="e.g. Read 20 pages" aria-label="Habit name"></div>
+            <div class="he-section"><p class="mini-label">ICON</p><div class="he-icons" id="habit-icons" role="radiogroup" aria-label="Icon"></div></div>
+            <div class="he-section"><p class="mini-label">CATEGORY</p><div class="pills he-pills" id="habit-categories" role="radiogroup" aria-label="Category"></div></div>
+            <div class="he-section"><p class="mini-label">SCHEDULE</p><div class="pills he-pills" id="habit-schedules" role="radiogroup" aria-label="Schedule"></div>
+              <div class="he-days" id="habit-days" hidden></div>
+              <div class="he-stepper" id="habit-times-row" hidden><button type="button" class="icon-btn he-step" data-step="times:-1" aria-label="Fewer">−</button><span id="habit-times-label">3 times a week</span><button type="button" class="icon-btn he-step" data-step="times:1" aria-label="More">+</button></div>
+            </div>
+            <div class="he-section" id="habit-goal-section"><p class="mini-label">DAILY GOAL</p><div class="pills he-pills" id="habit-goals" role="radiogroup" aria-label="Daily goal"></div>
+              <div class="he-amount" id="habit-amount-row" hidden><span class="he-stepper"><button type="button" class="icon-btn he-step" data-step="amount:-1" aria-label="Less">−</button><span id="habit-amount-label">Goal: 10</span><button type="button" class="icon-btn he-step" data-step="amount:1" aria-label="More">+</button></span><input id="habit-unit" class="he-input" maxlength="20" placeholder="unit, e.g. pages" aria-label="Unit"></div>
+            </div>
+            <div class="he-section"><p class="mini-label">TRACKING</p><div class="pills he-pills" id="habit-trackings" role="radiogroup" aria-label="Tracking"></div>
+              <div class="he-stepper" id="habit-focus-row" hidden><button type="button" class="icon-btn he-step" data-step="focus:-15" aria-label="Shorter">−</button><span id="habit-focus-label">Done after a 60-min focus session</span><button type="button" class="icon-btn he-step" data-step="focus:15" aria-label="Longer">+</button></div>
+            </div>
+            <div class="he-foot"><button class="link" id="habit-delete" type="button" hidden>Delete habit</button><span class="week-spacer"></span><button class="link" id="habit-cancel" type="button">Cancel</button><button class="primary pill-btn" id="habit-add" type="submit" disabled>Add Habit</button></div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Analytics -->
+      <section class="page" id="page-analytics" hidden>
+        <h1 class="page-title">Analytics</h1>
+        <div class="analytics-grid">
+          <div class="card">
+            <h2>Focus this week</h2>
+            <div class="bars" id="week-bars" role="img" aria-label="Minutes focused each day this week"></div>
+          </div>
+          <div class="card stats">
+            <h2>Last 7 days</h2>
+            <div class="stat"><strong id="week-minutes">0</strong><span>minutes focused</span></div>
+            <div class="stat"><strong id="week-sessions">0</strong><span>sessions</span></div>
+            <div class="stat"><strong id="week-blocked">0</strong><span>distractions closed</span></div>
+            <div class="stat"><strong id="week-streak">0</strong><span>day focus streak</span></div>
+          </div>
+        </div>
+        <!-- Week digest (the Mac's WeekDigestPanel, Canvas only): nothing is sent until the button is pressed. -->
+        <div class="card digest" id="week-digest">
+          <div class="digest-head">
+            <div>
+              <h2>Week digest</h2>
+              <p class="fine" id="digest-disclosure"></p>
+            </div>
+            <button class="btn" id="digest-write" type="button">Plan My Week</button>
+          </div>
+          <p class="rephrase-error" id="digest-error" role="alert" hidden><span id="digest-error-text"></span> <button class="link inline-link" id="digest-settings" type="button" hidden>Open Settings</button></p>
+          <div class="digest-body" id="digest-body" hidden></div>
+        </div>
+      </section>
+
+      <!-- Notes -->
+      <!-- Notes (the Mac app's TestProjectStudioView notes column; Reminders and Apple Notes are Mac-only). -->
+      <section class="page" id="page-notes" hidden>
+        <header class="page-head">
+          <h1 class="script page-cursive">Notes</h1>
+          <p class="page-sub">Your notes, kept on this PC.</p>
+        </header>
+        <div class="card notes-card">
+          <div class="notes-head">
+            <p class="mini-label">NOTES <span id="notes-count"></span></p>
+            <button class="primary pill-btn small-pill" id="note-new" type="button">+ New Note</button>
+          </div>
+          <div class="note-editor" id="note-editor" hidden>
+            <input class="note-title" id="note-title" maxlength="120" placeholder="Title" aria-label="Note title">
+            <textarea class="note-body" id="note-body" maxlength="20000" placeholder="Write something…" aria-label="Note"></textarea>
+            <div class="note-foot"><button class="link" id="note-delete" type="button">Delete</button><span class="fine" id="note-saved"></span><button class="primary pill-btn small-pill" id="note-done" type="button">Done</button></div>
+          </div>
+          <p class="fine" id="notes-empty">No notes yet. Use New Note to write one.</p>
+          <div class="notes-list" id="notes-list" aria-label="Your notes"></div>
+        </div>
+      </section>
+
+      <!-- Settings (the Mac app's TestSettingsView: two columns) -->
+      <section class="page" id="page-settings" hidden>
+        <header class="page-head">
+          <h1 class="script page-cursive">Settings</h1>
+          <p class="page-sub">Connections, security, focus tools and your account.</p>
+        </header>
+        <div class="settings-cols">
+          <div class="settings-col">
+            <h2 class="col-title">Locken</h2>
+            <div class="card setting-card">
+              <div class="setting-row">
+                <div>
+                  <p class="setting-title">Commitment mode</p>
+                  <p class="fine">Ending a session early waits 20 seconds first, so stopping is a choice, not a reflex.</p>
+                </div>
+                <label class="switch"><input type="checkbox" id="commitment-toggle" aria-label="Commitment mode" checked><span></span></label>
+              </div>
+            </div>
+            <div class="card setting-card">
+              <p class="setting-title">Keyboard shortcuts</p>
+              <p class="fine">The same shortcuts as the Mac app's menus, with Ctrl in place of Command.</p>
+              <ul class="shortcuts">
+                <li><span>New</span><kbd>Ctrl</kbd><kbd>1</kbd></li>
+                <li><span>Notes</span><kbd>Ctrl</kbd><kbd>2</kbd></li>
+                <li><span>Habit Tracker</span><kbd>Ctrl</kbd><kbd>3</kbd></li>
+                <li><span>Settings</span><kbd>Ctrl</kbd><kbd>4</kbd></li>
+                <li><span>Focus Session</span><kbd>Ctrl</kbd><kbd>5</kbd></li>
+                <li><span>Analytics</span><kbd>Ctrl</kbd><kbd>7</kbd></li>
+                <li><span>Start a session, or pause or resume the running one</span><kbd>Ctrl</kbd><kbd>N</kbd></li>
+                <li><span>Pause or resume the running session</span><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>P</kbd></li>
+                <li><span>New note</span><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>N</kbd></li>
+              </ul>
+            </div>
+            <!-- The Mac app's Focus setup card. Windows has no public way for an app to switch on Do Not Disturb,
+                 so this says how to set it up and opens the right Settings page. -->
+            <div class="card setting-card">
+              <p class="setting-title">Windows Do Not Disturb</p>
+              <p class="fine">Windows doesn't let apps turn on Do Not Disturb by themselves. Turn it on from the notification bell before a session, or set it to turn on by itself at your study times under Settings › System › Notifications.</p>
+              <button class="quiet" id="open-dnd-settings" type="button">Open Notification Settings</button>
+            </div>
+            <!-- The Mac app's Intelligent Rephrase card: on/off, what is shared, and the student's own key. -->
+            <div class="card setting-card">
+              <div class="setting-row">
+                <div>
+                  <p class="setting-title">Intelligent Rephrase</p>
+                  <p class="fine" id="ai-subtitle">Rewrites vague session goals into specific ones</p>
+                </div>
+                <label class="switch"><input type="checkbox" id="ai-toggle" aria-label="Intelligent Rephrase"><span></span></label>
+              </div>
+              <p class="fine" id="ai-age" hidden>AI features are for people 18 and older, because Claude's, ChatGPT's and Gemini's terms require it. Everything else in Locken works without them.</p>
+              <div id="ai-body">
+                <p class="fine" id="ai-privacy"></p>
+                <div class="ai-key-saved" id="ai-key-saved" hidden><span id="ai-key-label"></span><button class="link" id="ai-key-remove" type="button">Remove</button></div>
+                <form class="ai-key-form" id="ai-key-form" novalidate>
+                  <input id="ai-key" type="password" autocomplete="off" spellcheck="false" maxlength="512" placeholder="Paste a Claude, ChatGPT (OpenAI) or Gemini API key" aria-label="AI API key">
+                  <button class="primary pill-btn small-pill" id="ai-key-save" type="submit" disabled>Save</button>
+                </form>
+                <p class="error" id="ai-key-error" role="alert"></p>
+              </div>
+            </div>
+            <div class="card setting-card">
+              <p class="setting-title">Blocked apps</p>
+              <p class="fine">These close while a focus session runs with the Shield on. Click an app to keep it open instead.</p>
+              <div class="chips" id="blocked-chips"></div>
+              <p class="fine" id="kept-open" hidden></p>
+              <button class="link" id="blocked-add" type="button">+ Add an app</button>
+              <p class="fine">Browsers are never closed. Closing distracting browser tabs isn't on Windows yet.</p>
+            </div>
+            <!-- The Mac app's HabitFeaturesCard. -->
+            <div class="card setting-card">
+              <p class="setting-title">Habit Tracker</p>
+              <p class="fine">Turn features on or off. Your habits and history are kept either way.</p>
+              <div class="habit-features" id="habit-settings-features"></div>
+            </div>
+            <div class="card setting-card">
+              <p class="setting-title">Updates</p>
+              <p class="fine" id="version-line">Version 2.0.8.</p>
+              <button class="link" id="get-latest" type="button">Get the latest version</button>
+            </div>
+            <div class="card setting-card">
+              <p class="setting-title">Feedback</p>
+              <p class="fine">Tell the person who makes Locken what works and what doesn't.</p>
+              <button class="link" id="feedback-open" type="button">Send Feedback…</button>
+            </div>
+          </div>
+          <div class="settings-col">
+            <h2 class="col-title">Security &amp; privacy</h2>
+            <!-- The Mac app's TwoFactorCard. -->
+            <div class="card setting-card">
+              <div class="setting-row">
+                <div>
+                  <p class="setting-title">Two-Factor Authentication</p>
+                  <p class="fine" id="tfa-status">Require a 6-digit code from Google Authenticator or similar</p>
+                </div>
+                <button class="primary pill-btn small-pill" id="tfa-setup" type="button">Set Up</button>
+                <button class="link" id="tfa-off" type="button" hidden>Turn Off</button>
+              </div>
+              <form class="tfa-enroll" id="tfa-enroll" novalidate hidden>
+                <img class="tfa-qr" id="tfa-qr" alt="QR code for your authenticator app" width="164" height="164">
+                <div class="tfa-steps">
+                  <p class="fine">1. Scan the QR code in your authenticator app, or enter this key:</p>
+                  <code class="tfa-secret" id="tfa-secret"></code>
+                  <p class="fine">2. Type the 6-digit code it shows:</p>
+                  <div class="tfa-confirm"><input class="he-input" id="tfa-code" inputmode="numeric" maxlength="6" placeholder="6-digit code" aria-label="Authenticator code"><button class="primary pill-btn small-pill" id="tfa-confirm" type="submit">Turn On</button></div>
+                  <button class="link" id="tfa-cancel" type="button">Cancel</button>
+                </div>
+              </form>
+              <p class="error" id="tfa-error" role="alert"></p>
+            </div>
+            <div class="card setting-card">
+              <p class="setting-title">Account</p>
+              <p class="fine" id="settings-email"></p>
+              <form class="name-row" id="name-form">
+                <div>
+                  <p class="setting-title">Your name</p>
+                  <p class="fine">Shown in the dashboard greeting and on your profile card. Saved on this PC.</p>
+                </div>
+                <input class="he-input" id="name-input" maxlength="40" placeholder="Your name" aria-label="Your name" autocomplete="given-name">
+                <button class="quiet" id="name-save" type="submit" disabled>Save</button>
+              </form>
+              <p class="fine">Your session is kept in Windows Credential Manager and can't be copied to another device.</p>
+              <div class="setting-actions">
+                <button class="link" id="password-open" type="button">Change password…</button>
+                <button class="link" id="sign-out" type="button">Sign out</button>
+                <button class="link" id="sign-out-all" type="button">Sign Out Everywhere…</button>
+              </div>
+            </div>
+            <div class="card setting-card">
+              <p class="setting-title">Data on this PC</p>
+              <p class="fine">Your focus totals, habits and notes stay on this PC. Download a copy of everything Locken keeps about your account.</p>
+              <button class="link" id="download-data" type="button">Download My Data…</button>
+            </div>
+            <div class="card setting-card">
+              <p class="setting-title">Privacy &amp; Legal</p>
+              <p class="fine">What Locken shares, and the rules for using it.</p>
+              <div class="setting-actions">
+                <button class="link" data-legal="PRIVACY_POLICY" type="button">Privacy Policy</button>
+                <button class="link" data-legal="TERMS_OF_SERVICE" type="button">Terms of Service</button>
+                <button class="link" data-legal="ACCEPTABLE_USE_POLICY" type="button">Acceptable Use</button>
+                <button class="link" data-legal="SECURITY_AND_DATA_PROTECTION_POLICY" type="button">Security</button>
+                <button class="link" id="open-credits" type="button">Credits &amp; licenses</button>
+              </div>
+            </div>
+            <div class="card setting-card">
+              <p class="setting-title">Delete Account</p>
+              <p class="fine">Permanently deletes your Locken account and everything this PC keeps for it.</p>
+              <button class="link danger-link" id="delete-account" type="button">Delete Account…</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="dialog-backdrop" id="add-app" hidden>
+          <div class="login-card dialog">
+            <h2>Add an app to block</h2>
+            <p class="body">Pick one of the programs running now. It closes during focus sessions.</p>
+            <div class="app-picker" id="app-picker"></div>
+            <button class="link center" id="add-app-cancel" type="button">Cancel</button>
+          </div>
+        </div>
+        <div class="dialog-backdrop" id="feedback-dialog" hidden>
+          <form class="login-card dialog" id="feedback-form" novalidate>
+            <h2>Send feedback</h2>
+            <div class="stars" id="stars" role="radiogroup" aria-label="Rating"></div>
+            <textarea class="note-body feedback-text" id="feedback-text" maxlength="2000" placeholder="What works, what doesn't, what you'd like next"></textarea>
+            <p class="error" id="feedback-error" role="alert"></p>
+            <button class="primary" id="feedback-send" type="submit">Send</button>
+            <button class="link center" id="feedback-cancel" type="button">Cancel</button>
+          </form>
+        </div>
+        <div class="dialog-backdrop" id="password-dialog" hidden>
+          <form class="login-card dialog" id="password-form" novalidate>
+            <h2>Change password</h2>
+            <p class="body" id="password-hint">We'll email you a 6-digit code to confirm it's you.</p>
+            <button class="link center" id="password-send" type="button">Email me a code</button>
+            <label class="field"><span class="field-label">CODE</span><input id="password-code" inputmode="numeric" maxlength="10" placeholder="6-digit code"></label>
+            <label class="field"><span class="field-label">NEW PASSWORD</span><input id="password-new" type="password" autocomplete="new-password" maxlength="128" placeholder="At least 8 characters"></label>
+            <p class="error" id="password-error" role="alert"></p>
+            <button class="primary" id="password-save" type="submit">Change password</button>
+            <button class="link center" id="password-cancel" type="button">Cancel</button>
+          </form>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Commitment countdown (same as the Mac app's "Stay with it?") -->
+    <div class="dialog-backdrop" id="commit-gate" hidden>
+      <div class="login-card dialog center" role="dialog" aria-modal="true" aria-labelledby="commit-title">
+        <div class="mini-ring"><svg viewBox="0 0 84 84" aria-hidden="true"><circle cx="42" cy="42" r="36" class="ring-track"></circle><circle cx="42" cy="42" r="36" class="ring-fill" id="commit-ring"></circle></svg><span id="commit-count">20</span></div>
+        <h2 id="commit-title">End this session early?</h2>
+        <p class="body" id="commit-goal"></p>
+        <p class="fine" id="commit-left"></p>
+        <button class="primary" id="commit-keep" type="button">Keep focusing</button>
+        <button class="link center" id="commit-stop" type="button" disabled>End session in 20s</button>
+      </div>
+    </div>
+
+    <!-- "Why are you pausing?" (the Mac app's PauseReasonView) -->
+    <div class="dialog-backdrop" id="pause-dialog" hidden>
+      <div class="login-card dialog center" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+        <h2 id="pause-title">Why are you pausing?</h2>
+        <p class="body">The timer keeps running until you choose.</p>
+        <div class="reason-pills" id="reason-pills"></div>
+        <div class="field-bg" id="reason-other-wrap" hidden><input id="reason-other" maxlength="200" placeholder="Type why you're pausing" aria-label="Why you're pausing"></div>
+        <p class="error" id="pause-error" role="alert"></p>
+        <button class="primary" id="pause-keep" type="button">Keep Focusing</button>
+      </div>
+    </div>
+
+    <!-- Where you'll work: choose and order the apps (the Mac app's WorkspaceLineupOverlay) -->
+    <div class="dialog-backdrop" id="lineup-dialog" hidden>
+      <div class="login-card dialog" role="dialog" aria-modal="true" aria-labelledby="lineup-title">
+        <h2 id="lineup-title">Where you'll work</h2>
+        <p class="body">Choose the apps that show as tiles, and their order. The one you pick opens when a session starts.</p>
+        <ul class="lineup-list" id="lineup-list"></ul>
+        <button class="primary" id="lineup-done" type="button">Done</button>
+      </div>
+    </div>
+
+    <!-- Session finished -->
+    <div class="dialog-backdrop" id="canvas-dialog" hidden>
+      <form class="login-card dialog" id="canvas-form" novalidate>
+        <h2>Link Canvas</h2>
+        <div class="pills" role="radiogroup" aria-label="Link with">
+          <button class="pill canvas-method" type="button" role="radio" data-method="token" aria-checked="true">Access token</button>
+          <button class="pill canvas-method" type="button" role="radio" data-method="feed" aria-checked="false">Calendar feed</button>
+        </div>
+        <div id="canvas-token-fields">
+          <label class="field"><span class="field-label">CANVAS ADDRESS</span><input id="canvas-address" autocomplete="off" spellcheck="false" maxlength="253" placeholder="school.instructure.com"></label>
+          <label class="field"><span class="field-label">ACCESS TOKEN</span><input id="canvas-token" type="password" autocomplete="off" spellcheck="false" maxlength="512" placeholder="Paste your token"></label>
+          <p class="fine">In Canvas, open Account → Settings → New Access Token, then copy the token.</p>
+        </div>
+        <div id="canvas-feed-fields" hidden>
+          <label class="field"><span class="field-label">CALENDAR FEED LINK</span><input id="canvas-feed" autocomplete="off" spellcheck="false" maxlength="2048" placeholder="https://school.instructure.com/feeds/calendars/…"></label>
+          <p class="fine">In Canvas, open Calendar → Calendar Feed and copy the link.</p>
+        </div>
+        <p class="error" id="canvas-link-error" role="alert"></p>
+        <button class="primary" id="canvas-link-submit" type="submit" disabled>Link</button>
+        <button class="link center" id="canvas-link-cancel" type="button">Cancel</button>
+      </form>
+    </div>
+
+    <!-- Finish celebration (the Mac app's SessionCelebrationView): the padlock unlocks, then real numbers only. -->
+    <div class="celebrate" id="done-card" role="dialog" aria-modal="true" aria-labelledby="done-title" hidden>
+      <div class="cel-stack">
+        <div class="cel-lock" aria-hidden="true">
+          <div class="cel-glow"></div>
+          <svg class="cel-shackle" viewBox="0 0 70 66" width="70" height="66">
+            <defs><linearGradient id="cel-shackle-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B98AF0"/><stop offset="1" stop-color="#8C33E6"/></linearGradient></defs>
+            <path d="M6.5 66 V35 A28.5 28.5 0 0 1 63.5 35 V66"/>
+          </svg>
+          <div class="cel-body"><svg class="cel-check" viewBox="0 0 24 24" width="38" height="38"><path d="M5 12.5 10 17.5 19 7"/></svg></div>
+        </div>
+        <h2 class="cel-title" id="done-title"></h2>
+        <p class="cel-goal" id="done-goal"></p>
+        <div class="cel-stats" id="done-stats"></div>
+        <div class="cel-actions">
+          <button class="link" id="done-again" type="button">Start Another</button>
+          <button class="primary pill-btn" id="done-ok" type="button">Done</button>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- Credits & licenses -->
+  <section class="screen" id="screen-credits" hidden>
+    <div class="card narrow credits">
+      <h1>Credits &amp; licenses</h1>
+      <p>Locken uses this open-source software and data, each under its own license:</p>
+      <ul>
+        <li><strong>Tauri</strong>, <strong>@tauri-apps/api</strong>, <strong>tauri-plugin-opener</strong>, <strong>tauri-plugin-deep-link</strong> and <strong>tauri-plugin-single-instance</strong> by the Tauri Programme (tauri.app): MIT or Apache-2.0</li>
+        <li><strong>serde</strong>, <strong>serde_json</strong> by David Tolnay and contributors: MIT or Apache-2.0</li>
+        <li><strong>sysinfo</strong> by Guillaume Gomez and contributors: MIT</li>
+        <li><strong>keyring</strong> by Walther Chen, Daniel Brotsky and contributors: MIT or Apache-2.0</li>
+        <li><strong>Doto</strong> font by The Doto Project Authors: SIL Open Font License 1.1 (full text in the app as fonts/Doto-OFL.txt)</li>
+        <li><strong>Montserrat</strong> font by The Montserrat Project Authors: SIL Open Font License 1.1 (full text in the app as fonts/Montserrat-OFL.txt)</li>
+        <li><strong>Plasma ring</strong> on the dashboard by OriginKit (originkit.dev), under OriginKit's terms for components added to your own projects; it uses <strong>React</strong> (Meta, MIT) and <strong>OGL</strong> (Unlicense)</li>
+        <li><strong>ElectricLogo</strong> in session setup, <strong>DitherVeil</strong> on the Focus page and <strong>ProfileCard</strong> in the sidebar from React Bits by David Haz (reactbits.dev): MIT + Commons Clause</li>
+        <li><strong>Pinyon Script</strong> font by The Pinyon Project Authors: SIL Open Font License 1.1 (full text in the app as fonts/PinyonScript-OFL.txt)</li>
+        <li><strong>Pwned Passwords</strong> by Have I Been Pwned (haveibeenpwned.com), used for the breached-password check: Creative Commons Attribution 4.0</li>
+      </ul>
+      <p class="muted small">Discord, Steam, WhatsApp, Chrome, Edge, Comet, Cursor, VS Code, Word, Windows and the other names Locken mentions are trademarks of their owners; the Chrome, Comet (Perplexity) and Cursor logos are from Simple Icons (CC0). Locken isn't affiliated with them.</p>
+      <button class="btn" id="credits-back" type="button">Back</button>
+    </div>
+  </section>
+
+<!-- Legal documents (the Mac app's LegalReaderView), bundled so they open offline -->
+<div class="legal-reader" id="legal-reader" role="dialog" aria-modal="true" aria-labelledby="legal-title" hidden>
+  <div class="legal-bar">
+    <h2 id="legal-title" class="legal-title"></h2>
+    <button class="quiet" id="legal-close" type="button">Done</button>
+  </div>
+  <div class="pills legal-tabs" role="radiogroup" aria-label="Legal document" id="legal-tabs"></div>
+  <article class="legal-body" id="legal-body" tabindex="0"></article>
+</div>
+<!-- Shown while the PC has no internet -->
+<p class="offline-bar" id="offline-bar" role="status" hidden>You're offline. Sessions, notes and habits keep working; sign-in, AI, Canvas and updates wait for a connection.</p>
+
+</div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

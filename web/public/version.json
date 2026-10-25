@@ -1,0 +1,9 @@
+{
+  "build" : 57,
+  "downloadUrl" : "https:\/\/locken-app.vercel.app\/",
+  "maintenanceMode" : false,
+  "notes" : "The Assistant's voice starts speaking much sooner: it begins loading as soon as you open the tab or ask a question, and it reads its reply a sentence at a time instead of waiting for the whole answer.",
+  "sha256" : "307b4f4cc5db79ac3384082d619e8d5dd788c065bcf3ebadcf26f044c64ebd4a",
+  "signature" : "E5p4RONjmzi9LYGFIyROzkMd1gK\/0NOvahv+R+zSkLJAP1\/hCBVt4S7XXvdEXMa\/8NSEyZ\/Qumnn5YcK2xkOAw==",
+  "version" : "2.0.8"
+}

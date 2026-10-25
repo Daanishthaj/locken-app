@@ -1,0 +1,9 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "checkin-aurora",
+  "description": "The check-in glow can only hear that the check-in is closing, so it can fade out. No app commands.",
+  "windows": ["checkin-aurora"],
+  "permissions": [
+    "core:event:default"
+  ]
+}

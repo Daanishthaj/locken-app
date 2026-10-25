@@ -1,0 +1,45 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Xcode
+build/
+DerivedData/
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+xcuserdata/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# User artifacts
+*.log
+.env
+.env.*
+!.env.example
+b64_*.txt
+scratch/
+web/.vercel
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+
+
+# RuFlo working files (agent tooling, not Locken)
+.claude-flow/
+.swarm/
+ruvector.db
+.claude/proven-config.json
+.claude/.proven-config-version
+
+# Release artifacts are published on the website, not in source
+web/public/Locken.dmg
+web/public/Locken-Setup.exe
+.env
+.env.*
+!.env.example

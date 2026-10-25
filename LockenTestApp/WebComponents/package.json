@@ -1,0 +1,23 @@
+{
+  "name": "locken-test-web-components",
+  "private": true,
+  "description": "React Bits components (ElectricLogo, DitherVeil) bundled into ../Resources/Web for the native app's WKWebViews.",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@hugeicons/core-free-icons": "^4.3.5",
+    "@hugeicons/react": "^1.1.10",
+    "@react-three/fiber": "^9.8.1",
+    "@types/three": "^0.186.0",
+    "framer-motion": "^13.4.4",
+    "motion": "^12.43.0",
+    "ogl": "^1.0.11",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

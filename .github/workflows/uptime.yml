@@ -1,0 +1,39 @@
+name: Uptime check
+
+# Checks every few hours that the site, the update feed, both downloads and Supabase answer. A failed run makes
+# GitHub email the repo owner, which is Locken's alerting. No secrets, no checkout, no third-party actions.
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Site, update feed, downloads and Supabase
+        run: |
+          set -eu
+          site=https://locken-app.vercel.app
+          fail=0
+          check() { # url, expected status
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 -I "$1" || echo 000)
+            if [ "$code" = "$2" ]; then echo "ok   $code $1"; else echo "FAIL $code $1 (expected $2)"; fail=1; fi
+          }
+          check "$site/" 200
+          check "$site/Locken.dmg" 200
+          check "$site/Locken-Setup.exe" 200
+          # The update feed must be valid JSON with a build number and a checksum, or every installed app stops updating.
+          if curl -s --max-time 30 "$site/version.json" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert int(d["build"]) > 0 and len(d["sha256"]) == 64'; then
+            echo "ok   version.json"
+          else
+            echo "FAIL version.json is missing or malformed"; fail=1
+          fi
+          # Supabase answers (401 without a key is the healthy answer here; 5xx or no answer is not).
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 https://isohdbjcvluvaflmrfeg.supabase.co/auth/v1/health || echo 000)
+          case "$code" in 2*|401) echo "ok   $code Supabase auth";; *) echo "FAIL $code Supabase auth"; fail=1;; esac
+          exit $fail

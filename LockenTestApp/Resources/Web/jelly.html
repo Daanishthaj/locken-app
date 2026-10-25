@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="jelly.css">
+<style>html, body, #root { margin: 0; width: 100%; height: 100%; background: transparent; overflow: hidden; }
+@font-face { font-family: 'Montserrat'; src: url('fonts/Montserrat-Regular.ttf'); font-weight: 400; }
+@font-face { font-family: 'Montserrat'; src: url('fonts/Montserrat-Medium.ttf'); font-weight: 500; }
+@font-face { font-family: 'Montserrat'; src: url('fonts/Montserrat-SemiBold.ttf'); font-weight: 600; }
+@font-face { font-family: 'Montserrat'; src: url('fonts/Montserrat-Bold.ttf'); font-weight: 700; }
+@font-face { font-family: 'Doto'; src: url('fonts/Doto.ttf'); font-weight: 100 900; }
+body { font-family: 'Montserrat', sans-serif; }
+/* Picker labels keep Locken's dotted Doto, at full weight and 15px (a size its dots land on whole pixels), so the
+   dots are solid and readable rather than thin and faint. */
+body { font-family: 'Doto', sans-serif; font-weight: 900; font-variation-settings: 'ROND' 100; }
+.jelly-radio__label { font-weight: 900 !important; font-size: 15px !important; letter-spacing: 0.02em; }
+/* Compact pills: shorter and tighter than the component's defaults. */
+.jelly-radio { --jr-h: 30px !important; --jr-px: 12px !important; --jr-gap: 6px !important; }
+.jelly-radio__label { -webkit-font-smoothing: antialiased; }
+#root { display: flex; align-items: flex-start; justify-content: flex-start; }
+/* A row wider than its space wraps onto a second line instead of being cut off. */
+.jelly-radio { flex: 0 1 auto; flex-wrap: wrap; max-width: 100%; }
+.jelly-radio__chip { flex: none; }
+/* Each pill is snapped to a whole number of pixels by jelly-entry.jsx, and its label starts at the padding, so the dots of
+   the Doto text land on the pixel grid (at fractional positions they blur). The 16px line makes the vertical offset whole. */
+.jelly-radio__skin { box-sizing: border-box; width: 100%; justify-content: flex-start; }
+.jelly-radio__label { white-space: nowrap; line-height: 16px; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="jelly.js"></script>
+
+<script>addEventListener('load', () => requestAnimationFrame(() => requestAnimationFrame(() => window.webkit?.messageHandlers?.locken?.postMessage('ready'))));</script>
+</body>
+</html>

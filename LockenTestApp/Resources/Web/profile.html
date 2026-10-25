@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="profile.css">
+<style>html, body, #root { margin: 0; width: 100%; height: 100%; background: transparent; overflow: hidden; }
+@font-face { font-family: 'Montserrat'; src: url('fonts/Montserrat-Regular.ttf'); font-weight: 400; }
+@font-face { font-family: 'Montserrat'; src: url('fonts/Montserrat-Medium.ttf'); font-weight: 500; }
+@font-face { font-family: 'Montserrat'; src: url('fonts/Montserrat-SemiBold.ttf'); font-weight: 600; }
+@font-face { font-family: 'Montserrat'; src: url('fonts/Montserrat-Bold.ttf'); font-weight: 700; }
+@font-face { font-family: 'Doto'; src: url('fonts/Doto.ttf'); font-weight: 100 900; }
+body { font-family: 'Montserrat', sans-serif; }
+#root { display: flex; align-items: center; justify-content: center; }
+.pc-card-wrapper { transform: scale(var(--pc-scale, 1)); transform-origin: center; flex: none; }
+.pc-card { height: 450px !important; max-height: none !important; aspect-ratio: 0.94 !important; }
+.pc-details { top: 2em !important; }
+.pc-details h3 { font-size: 2.5em !important; background-image: linear-gradient(to bottom, #fff, #b4b4bf) !important; }
+.pc-details p { font-size: 14px !important; top: -12px !important; }
+/* The card renders at ~47% scale in the sidebar, so the bottom banner uses about double the usual sizes. */
+.pc-user-info { --ui-inset: 16px !important; padding: 16px 18px !important; }
+.pc-mini-avatar { width: 56px !important; height: 56px !important; }
+.pc-user-details { gap: 14px !important; }
+.pc-user-text { gap: 8px !important; }
+.pc-handle { font-size: 26px !important; }
+.pc-status { font-size: 19px !important; }
+/* No background in the component CSS, so WebKit's light default button fill showed through; keep it a quiet glass chip. */
+.pc-contact-btn { width: 80px; height: 80px; padding: 0 !important; place-items: center; border-radius: 20px !important; background: rgba(255, 255, 255, 0.08) !important; }
+.pc-contact-btn .pc-settings-icon { width: 42px; height: 42px; border-radius: 0 !important; }
+/* Now-playing row in place of the name. `.pc-card *` makes every descendant a click-through grid cell, so each part resets that. */
+.pc-details { padding: 0 22px; box-sizing: border-box; }
+.pc-music {
+  display: flex !important; align-items: center; gap: 18px; grid-area: auto !important;
+  padding: 14px 16px; border-radius: 24px !important; pointer-events: auto !important;
+  background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); text-align: left;
+}
+.pc-music--action { cursor: pointer; }
+.pc-music-cover {
+  display: grid !important; place-items: center; flex: none; width: 76px; height: 76px;
+  border-radius: 14px !important; overflow: hidden; background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);
+}
+.pc-music-cover img { display: block !important; width: 100%; height: 100%; object-fit: cover; border-radius: 0 !important; }
+.pc-music-cover svg { width: 36px; height: 36px; }
+.pc-music-title {
+  display: block !important; flex: 1; min-width: 0; font-size: 26px; font-weight: 600; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: 0 !important;
+}
+.pc-music-btn {
+  display: grid !important; place-items: center; flex: none; width: 64px; height: 64px; padding: 0;
+  border-radius: 50% !important; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.12);
+  color: #fff; cursor: pointer; pointer-events: auto !important;
+}
+.pc-music-btn svg { width: 30px; height: 30px; border-radius: 0 !important; }
+/* A regular photo (not a transparent cut-out portrait) fades into the card instead of sitting as a hard-edged block. */
+.pc-avatar-content .avatar {
+  -webkit-mask-image: radial-gradient(ellipse 60% 55% at 50% 55%, #000 50%, transparent 100%);
+  mask-image: radial-gradient(ellipse 60% 55% at 50% 55%, #000 50%, transparent 100%);
+}</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="profile.js"></script>
+<script>(function () {
+  const cardHeight = 450, cardWidth = 450 * 0.94, margin = 8;
+  function fit() {
+    const scale = Math.min((innerWidth - margin) / cardWidth, (innerHeight - margin) / cardHeight);
+    document.documentElement.style.setProperty('--pc-scale', scale.toFixed(4));
+  }
+  addEventListener('resize', fit);
+  fit();
+})();</script>
+<script>addEventListener('load', () => requestAnimationFrame(() => requestAnimationFrame(() => window.webkit?.messageHandlers?.locken?.postMessage('ready'))));</script>
+</body>
+</html>

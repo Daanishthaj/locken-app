@@ -1,0 +1,77 @@
+# Threat model
+
+What Locken protects, who might attack it, where the trust boundaries are, and which risks are accepted for now. Review this when adding a feature that crosses one of the boundaries below.
+
+## Assets
+
+1. **Account access:** session tokens, passwords, emailed codes, TOTP factors.
+2. **Account data on the server:** email, name, avatar.
+3. **Private data on the Mac:** focus history, screen usage (apps and domains), notes, habits, reminders, music history.
+4. **Third-party secrets:** Canvas tokens and feed links, AI provider keys (Mac app; Windows app in Credential Manager, used only from Rust so the web view never holds the key).
+5. **The Mac itself:** Locken can quit apps and close browser tabs, so a bug or a hijacked app could disrupt the user's work.
+6. **The update channel:** whatever Locken installs runs with the user's rights.
+
+## Who might attack
+
+| Actor | Can do | Wants |
+|---|---|---|
+| Anyone on the internet | Read the public anon key from the app or site, call Supabase directly | Read or change other students' data, spam the database |
+| Someone with a stolen token or a phished code | Call the API as that user | That student's account |
+| Another person on the same Mac (sibling, classmate) | Use their own macOS account, or the same one while it's unlocked | Another student's Locken data |
+| A malicious website or school Canvas host | Return crafted pages, feeds or paging links | Steal the Canvas token, inject script |
+| Whoever controls the website or its hosting | Change `Locken.dmg` and `version.json` | Push malware through updates |
+| An AI provider, or a prompt injected through assignment text | Return unexpected text | Make the app show or do something wrong |
+
+## Trust boundaries
+
+1. **App ↔ Supabase:** only the publishable key ships (revocable on its own). The server checks every user token; RLS decides access.
+2. **App ↔ school Canvas:** the token goes only to the host the student typed, over HTTPS; paging never leaves that host.
+3. **App ↔ AI providers:** user-chosen and opt-in; only text the user typed or picked, or asked to have summarized (reminders and week digests, sent only when the user presses the button), is sent. AI output is shown as text only and never triggers actions.
+4. **App ↔ other apps:** Apple Events to browsers, music players, System Events and (read-only, once connected) Notes; `NSRunningApplication.terminate()` for blocked apps.
+5. **Native app ↔ its own web views:** pages are bundled, navigation is locked, and messages are a fixed small set of strings.
+7. **Assistant (Mac):** the student's voice becomes text on the Mac (on-device speech recognition only). The text goes to the student's AI provider like other AI features. The AI's reply is untrusted: it can only *propose* one of five actions (start a session, add a calendar event, add a reminder, tick off a focus step, mark a Canvas assignment done), each checked by `VoiceAssistant.parseReply` and run only after the student presses a confirm button. Adding events also needs the off-by-default switch. Voice files come from a pinned GitHub release and are used only if their SHA-256 matches.
+6. **Updater ↔ Vercel:** the DMG is downloaded and checked against the SHA-256 in `version.json`.
+
+## Threats and mitigations (STRIDE)
+
+| # | Threat | Mitigation | Status |
+|---|---|---|---|
+| S1 | Spoofing a user by sending their ID | Identity comes from the token (`auth.uid()`); `user_id` defaults to it | Done |
+| S2 | Guessing passwords or codes, credential stuffing from botnets | Server rate limits, client backoff, a 6-digit email code on every sign-in (a leaked password alone gets nowhere), codes that expire in 10 min, optional TOTP (Test App). Cloudflare Turnstile bot check built into both apps (`TurnstileGate.swift`, `windows/src/turnstile.js`), off until a site key is set and CAPTCHA protection is switched on in Supabase | Done; Turnstile waiting on the owner's Cloudflare account |
+| S3 | Telling which emails have accounts | One error for wrong email or password; sign-up gives the same reply for existing emails | Done |
+| T1 | Changing another user's rows | Owner-only RLS on every table, restrictive MFA policies, column grants on profiles | Done |
+| T2 | Tampered update | The in-app updater requires an Ed25519 signature over version, build and SHA-256 from the release key (kept in the publisher's Keychain, never on the site); then the SHA-256 check; never strips quarantine | Done for in-app updates. The curl installer can only check the SHA-256 (macOS's openssl lacks Ed25519). |
+| T3 | Script injection through the blocked-site list | Entries reduced to host/path characters before entering AppleScript; unit-tested | Done |
+| T4 | Giving a different (older) age on a second computer, or changing it later | The birth month and year live on the account (`profiles`); the apps use the account's answer, and trigger `private.guard_profile_consent` makes them write-once and refuses under-13 | Done (2026-10-18) |
+| R1 | Denying an action | No audit log; Supabase keeps auth logs | Accepted (low impact for a focus app) |
+| I1 | Reading other users' data with the anon key | RLS plus no anon privileges on account tables; tested: anon gets 401 on every table | Done |
+| I2 | Secrets left in the bundle or git | Only the anon key ships; full history scanned; `.env` files git-ignored | Done |
+| I3 | Tokens readable by other apps | Keychain only, never UserDefaults or plain files | Done |
+| I8 | Account data left in the network cache | Test App: every request with a token or key goes through `SecureNetwork.session` (ephemeral, no disk cache, no cookies); old cache cleared at launch | Done (Test App) |
+| I4 | Another account on the same Mac seeing data | Per-account files, UserDefaults keys and Keychain items in the Mac app; per-account stats on Windows | Done |
+| I5 | Canvas token sent to the wrong host | HTTPS only, host normalised, paging limited to the same host; unit-tested. Windows: the same rules in Rust (`canvas.rs`), redirects not followed, responses capped at 4 MB | Done |
+| I6 | Raw errors leaking internals | Friendly messages everywhere a user sees an error | Done |
+| D1 | Spam inserts with the anon key | Anonymous waitlist inserts closed; no table writable by anon | Done |
+| D2 | Blocking work apps by mistake | Blocker only quits games, social and YouTube; work apps are protected first; anything unknown keeps running | Done |
+| E1 | Privilege escalation through database functions | SECURITY DEFINER functions are closed to anon/authenticated; the helper lives in a non-exposed schema | Done |
+| E2 | Service-role key leaking | Exists only in the Edge Function environment | Done |
+| E3 | A hijacked web view running native actions or navigating away | Mac: navigation locked to bundled pages, message handler accepts only known strings. Windows: CSP limited to the app's files, and the check-in window can't call any app command; the bundled card and effect pages run in same-origin iframes (frame-ancestors 'self'), and the main window accepts only known message strings from its own profile-card frame | Done |
+| T5 | A prompt-injected or confused AI reply acting for the student (for example text in an assignment or calendar title telling the assistant to add events or start sessions) | The reply can only propose `start_session`, `add_event`, `add_reminder`, `complete_step`, `check_off_assignment`, `complete_habit`, `complete_reminder`, `move_reminder`, `add_note`, `open_page` (not Admin), `music` (Spotify and Music only), `pause_session` or `resume_session`; minutes are limited to 5–180, titles to 100–110 characters, event and reminder times to between an hour ago and a year ahead (a bad time rejects the reminder instead of dropping the date); steps and assignments are picked by their number in the list the model was given, so a made-up one, or one already done, is ignored. Nothing runs until the student presses the confirm button (Start Session, Add to Calendar, Add Reminder, Mark Done, Move Reminder, Save Note, Open, Do It, Pause or Resume; a spoken yes also works), calendar adds need the switch on, reminders need Reminders access, and marking an assignment done only hides it in Locken (nothing is sent to Canvas). Nothing can be deleted by the assistant, and it can't end a session or quit Locken: the most it can do to a reminder is mark it done or move its due date, and a pause goes through commitment mode's wait like the Pause button. Habits it ticks must be due today, not done and not self-tracking; reminders are picked by number from the open ones it was given; a note is cut to 2000 characters Parser checks run in Debug builds (`VoiceAssistant.selfCheck`) | Done |
+| T6 | Tampered voice files from the GitHub release | Pinned to tag `models-2026-03-23`, SHA-256 checked before unpacking; a mismatch is deleted and never loaded. The Swift package is pinned to exactly `0.11.2` | Done |
+| I11 | The Assistant hotkey turning the microphone on by accident, or logging keystrokes | The key is only held-and-released state: Locken reads which modifier is down, never which keys are typed, and needs no Input Monitoring or Accessibility permission. It counts as a hold only after 0.4 s with no other key, modifier or click (so shortcuts like Option+Tab don't trigger it), only while signed in with an AI key, and can be set to Off. From another app it listens for one question and stops by itself, with a short sound when the microphone goes live; hands-free listening started in Locken ends when the student leaves it | Done |
+| I14 | Locken starting at login without the student's say, or measuring when they don't expect it | Off until the student turns on Settings › Open at login. It uses Apple's login-item API, so it shows in System Settings › General › Login Items where it can be removed, and it is the same app (no separate helper): it starts with its window hidden and only the usage tracker's existing rules apply (nothing sent anywhere, usage kept per account, paused while the screen is locked or idle). Quitting stops it | Done |
+| I13 | Google Classroom sign-in stolen or abused | Sign-in uses the system browser sheet with PKCE (S256) and a random `state` that must match, so an intercepted code is useless; the app holds no client secret (an iOS-type client ID, which is public); the two scopes are read-only (courses; the student's own course work and submissions); the refresh token is only in the Keychain and is revoked at Google on Unlink and Delete Account; Google's own text never reaches the UI. A school that blocks third-party apps just gets a plain message. Checks of the PKCE vector, the link and the parsers run in Debug builds (`GoogleClassroom.selfCheck`) | Done |
+| I12 | Locken's browser scripting being abused, or reading more than it should | Locken only sends a fixed line of JavaScript (no text from the AI, a page or the student goes into it; only the volume factor and fade time, both fixed numbers, are filled in) to tabs whose address is on five media sites, and only reads the page's media-session title, artist and artwork back (cut to a length; artwork must be https). It works only if the student allowed Automation for that browser and switched on that browser's Allow JavaScript from Apple Events; Settings › Other media says what that switch does and the volume change can be turned off. Volumes are put back after the Assistant talks, when Locken quits, and on the next launch if Locken was force-quit while they were turned down (the original volumes sit in UserDefaults `assistant.duckedMedia` until then) | Done |
+| I10 | Saved Assistant conversations read by another account or person on the Mac | The file is per account (`AccountScope`), mode `0600`, and loaded only after that account signs in; signing in as a different account clears the conversation on screen first; the student can delete a conversation or a day from History, and Delete Account erases the file. Not encrypted by Locken (see accepted risks: relies on macOS account and FileVault). Self-checks of grouping, search and the file round trip run in Debug builds (`AssistantHistoryStore.selfCheck`) | Done |
+| I9 | Microphone audio leaving the Mac | `requiresOnDeviceRecognition = true`; if on-device recognition isn't available the assistant asks the student to type instead of using Apple's servers; audio is never recorded | Done |
+| I7 | A secret committed by mistake | `scripts/git-hooks/pre-commit` blocks keys, private keys, service-role JWTs and `.env` files | Done |
+
+## Accepted risks (for now)
+
+- **A student can still force-quit Locken mid-session** (Force Quit or Activity Monitor), which stops the Shield until Locken opens again. Commitment mode puts a countdown before normal quitting; a force-quit session isn't lost, it picks up with the time left on the next launch. Reopening Locken automatically was tried and dropped: a background helper was unreliable to start and added a Login Item.
+- **The app isn't signed with an Apple Developer ID or notarized.** Users open it with right-click → Open. In-app updates are protected by Locken's own release signature (T2), but macOS itself can't vouch for the app. Accepted while Locken is free-only; revisit when enrolling in the Apple Developer Program.
+- **Leaked-password protection is off in Supabase,** because it needs the Pro plan. The Mac and Windows apps check breached passwords themselves, but a client-side check can be skipped by calling the API directly.
+- **Local files aren't encrypted by Locken.** They rely on the user's macOS account and FileVault.
+- **Old installs of the discontinued app** keep working offline in guest mode on Macs that already have them; nothing can switch off installed software remotely. Downloads are gone, `version.json` tells them they're discontinued, and turning off legacy keys ends their sign-in.
+- **One outside request remains:** Spotify album artwork on the Mac profile card, so Spotify's image server sees the user's IP address (disclosed in the Privacy Policy).
+- **Updates on Mac aren't notarized yet:** the updater only installs a build whose Ed25519 signature, SHA-256 and code signature (Locken's team ID) all check out, and keeps the old app otherwise. Developer ID signing and notarization need the paid Apple Developer Program.

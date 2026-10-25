@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-stop-blocking"
+description = "Enables the stop_blocking command without any pre-configured scope."
+commands.allow = ["stop_blocking"]
+
+[[permission]]
+identifier = "deny-stop-blocking"
+description = "Denies the stop_blocking command without any pre-configured scope."
+commands.deny = ["stop_blocking"]

@@ -1,0 +1,27 @@
+# Advisories OSV-Scanner reports in Cargo.lock that don't reach the shipped app. Each crate below is only built
+# for Linux (Tauri's GTK/WebKitGTK and keyring's D-Bus backends) or only at compile time; the Windows build has none
+# of them (`cargo tree --target x86_64-pc-windows-msvc -i <crate>` prints nothing). Recheck when Locken ships on Linux.
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0429" # glib: Linux GTK only
+reason = "Linux-only dependency of Tauri (GTK); not in the Windows build"
+
+[[IgnoredVulns]]
+id = "GHSA-wrw7-89jp-8q8g" # same glib advisory
+reason = "Linux-only dependency of Tauri (GTK); not in the Windows build"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0370" # proc-macro-error: unmaintained, compile-time macro only
+reason = "Unmaintained notice for a Linux-only build-time macro; not in the Windows build"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0371" # zbus_names
+reason = "Linux-only D-Bus dependency (keyring, Tauri); not in the Windows build"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0370" # zvariant
+reason = "Linux-only D-Bus dependency (keyring, Tauri); not in the Windows build"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0372" # zvariant_derive
+reason = "Linux-only D-Bus dependency (keyring, Tauri); not in the Windows build"

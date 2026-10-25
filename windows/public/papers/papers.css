@@ -1,0 +1,53 @@
+/* Ported unchanged from the Mac app (LockenTestApp/Resources/Web/papers.html). */
+/* Transparent so the app's own background shows through; papers scale with the window. */
+  html, body { margin: 0; background: transparent; overflow: hidden; }
+  #stage { position: fixed; inset: 0; perspective: 110vmin; }
+  /* A sheet is a chain of hinged strips, so it can curl like real paper instead of moving as a stiff card. */
+  .sheet {
+    position: absolute; left: 50%; top: 50%;
+    width: 18vmin; height: 24vmin; margin: -12vmin 0 0 -9vmin;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .strip {
+    position: absolute; top: 0; height: 24vmin;
+    transform-style: preserve-3d; transform-origin: 0 50%;
+  }
+  .face, .flap {
+    position: absolute;
+    /* Notebook paper: fibre grain, a red margin line, faint blue rules and a warm off-white, sized to the whole
+       sheet and offset per strip so the strips line up into one page. */
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.32 0 0 0 0 0.28 0 0 0 0 0.45 0 0 0 0.14 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+      linear-gradient(to right, transparent 3.4vmin, rgba(139, 92, 246, 0.5) 3.4vmin, rgba(139, 92, 246, 0.5) calc(3.4vmin + 1px), transparent calc(3.4vmin + 1px)),
+      repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.9vmin - 1px), rgba(120, 105, 200, 0.2) calc(1.9vmin - 1px), rgba(120, 105, 200, 0.2) 1.9vmin),
+      linear-gradient(160deg, #F1EEF9 0%, #E6E0F4 60%, #D9D1EE 100%);
+    background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+  }
+  .face { inset: 0; }
+  .strip.first > .face {
+    -webkit-mask-image:
+      radial-gradient(circle 0.62vmin at 1.35vmin 17%, transparent 98%, #000 100%),
+      radial-gradient(circle 0.62vmin at 1.35vmin 50%, transparent 98%, #000 100%),
+      radial-gradient(circle 0.62vmin at 1.35vmin 83%, transparent 98%, #000 100%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+  .holes { position: absolute; inset: 0; pointer-events: none; background:
+      radial-gradient(circle 0.82vmin at 1.35vmin 17%, transparent 0.62vmin, rgba(40, 25, 80, 0.22) 0.66vmin, transparent 0.82vmin),
+      radial-gradient(circle 0.82vmin at 1.35vmin 50%, transparent 0.62vmin, rgba(40, 25, 80, 0.22) 0.66vmin, transparent 0.82vmin),
+      radial-gradient(circle 0.82vmin at 1.35vmin 83%, transparent 0.62vmin, rgba(40, 25, 80, 0.22) 0.66vmin, transparent 0.82vmin); }
+  .strip.first { left: 0; }
+  .strip.first > .face { border-radius: 0.4vmin 0 0 0.4vmin; }
+  .strip.last > .face { border-radius: 0 0.4vmin 0.4vmin 0; }
+  /* A corner that folds over along its diagonal (the paper underneath is cut to match, so it reads as one sheet). */
+  .flap { transform-style: preserve-3d; }
+  /* Light and shade across each strip, set from how far that strip is turned. */
+  .shade { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; }
+  /* The shadow stays on the desk: it moves with the sheet but doesn't bend. */
+  .shadow {
+    position: absolute; left: 50%; top: 50%;
+    width: 18vmin; height: 24vmin; margin: -12vmin 0 0 -9vmin;
+    border-radius: 0.6vmin; background: rgba(12, 6, 30, 0.6);
+    will-change: transform, filter, opacity;
+  }
