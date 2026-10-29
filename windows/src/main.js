@@ -8,6 +8,9 @@ import { playLaunchReveal, launchRevealCss } from './launch-reveal.js';
 import { playReceiptIntro, receiptCss } from './receipt.js';
 import { createFluidGlassTime } from '../../shared/fluidglass-time.js';
 import { mountGradualBlur } from './gradual-blur.js';
+import { initAssistant, showAssistant, refreshAssistantSettings, resetAssistant, eraseAssistantData } from './assistant.js';
+import { showAdmin, resetAdmin } from './admin.js';
+import { mountButtonGlow } from './glow.js';
 import { playFocusSound, unlockFocusSound } from './focus-sound.js';
 import { LEGAL_DOCS, legalDocForLink, renderMarkdown } from './legal.js';
 
@@ -27,6 +30,8 @@ const SIGNUP_BLOCKED = 'locken.signupBlocked';
 
 function show(name) {
   for (const s of screens) $(`screen-${s}`).hidden = s !== name;
+  // Signed out: nothing of the last account's Assistant or Admin stays on screen.
+  if (name !== 'main' && !user) { resetAssistant(); resetAdmin(); setAdmin(false); }
   // The sign-in screens are full-window like the Mac app's, without the top bar.
   document.body.classList.toggle('signed-out', ['auth', 'code', 'reset'].includes(name));
   const focusable = $(`screen-${name}`).querySelector('input, button');
@@ -121,6 +126,23 @@ async function enterApp(verified) {
   show('main');
   showPage('dashboard');
   restoreRunningSession();
+  checkAdmin();
+}
+
+// ---------- Admin page: only for accounts the server says are admins (it checks again on every call) ----------
+let adminUser = false;
+function setAdmin(on) {
+  adminUser = on;
+  $('nav-admin').hidden = !on;
+  $('rail-icons-bottom').classList.toggle('two', on);
+  lastRailProps = {};
+  updateRail();
+  if (!on && shownPage === 'admin') showPage('dashboard');
+}
+async function checkAdmin() {
+  const id = user?.id;
+  const admin = await auth.isAdmin();
+  if (user?.id === id) setAdmin(admin);
 }
 
 $('age-form').addEventListener('submit', (event) => {
@@ -376,6 +398,7 @@ $('delete-confirm').addEventListener('click', () => {
     localStorage.removeItem(blockKey());
     localStorage.removeItem(nameKey(user.id));
     await invoke('ai_remove_key', { account: user.id }).catch(() => {});
+    await eraseAssistantData(user.id);
     await invoke('canvas_unlink', { account: user.id }).catch(() => {});
     localStorage.removeItem(checkedKey());
     user = null;
@@ -483,10 +506,11 @@ $('legal-reader').addEventListener('keydown', (event) => {
 });
 
 // ---------- Pages (sidebar, like the Mac app) ----------
-const pages = ['dashboard', 'focus', 'habits', 'analytics', 'notes', 'settings'];
+const pages = ['dashboard', 'focus', 'assistant', 'habits', 'analytics', 'notes', 'settings', 'admin'];
 function showPage(name) {
   // Like the Mac: while a session runs, Home ("New") isn't shown; the Focus page stays up.
   if (name === 'dashboard' && session && !session.paused) name = 'focus';
+  if (name === 'admin' && !adminUser) name = 'dashboard';
   for (const p of pages) $(`page-${p}`).hidden = p !== name;
   for (const item of document.querySelectorAll('.nav-item')) item.classList.toggle('selected', item.dataset.page === name);
   shownPage = name;
@@ -497,7 +521,9 @@ function showPage(name) {
   if (name === 'habits') renderHabits();
   if (name === 'analytics') { renderAnalytics(); renderWeekDigest(); }
   if (name === 'notes') renderNotes();
-  if (name === 'settings') { renderBlockedApps(); renderSettingsHabitFeatures(); renderTwoFactor(); }
+  if (name === 'settings') { renderBlockedApps(); renderSettingsHabitFeatures(); renderTwoFactor(); refreshAssistantSettings(); }
+  if (name === 'assistant') showAssistant();
+  if (name === 'admin') showAdmin();
 }
 for (const item of document.querySelectorAll('.nav-item')) item.addEventListener('click', () => showPage(item.dataset.page));
 
@@ -506,13 +532,17 @@ for (const item of document.querySelectorAll('.nav-item')) item.addEventListener
 const RAIL_PAGES = [
   { id: 'new', label: 'New', page: 'dashboard' },
   { id: 'focus', label: 'Focus', page: 'focus' },
+  { id: 'assistant', label: 'Assistant', page: 'assistant' },
   { id: 'habits', label: 'Habits', page: 'habits' },
   { id: 'analytics', label: 'Analytics', page: 'analytics' },
   { id: 'notes', label: 'Notes', page: 'notes' },
   { id: 'settings', label: 'Settings', page: 'settings' },
+  { id: 'admin', label: 'Admin', page: 'admin' },
 ];
 /** Kept apart at the bottom of the rail, like the Mac's Settings and Admin. */
-const RAIL_BOTTOM = new Set(['settings']);
+const RAIL_BOTTOM = new Set(['settings', 'admin']);
+/** The rail's pages for this account (Admin only for admins). */
+const railPages = () => RAIL_PAGES.filter((p) => p.id !== 'admin' || adminUser);
 const SIDEBAR_KEY = 'locken.sidebar.collapsed';
 /** The window is too narrow for the full sidebar (it can shrink to 640 px): the rail is used instead, whatever was chosen. */
 const NARROW_WINDOW = matchMedia('(max-width: 860px)');
@@ -529,9 +559,10 @@ function updateRail() {
   const bottom = $('rail-icons-bottom');
   if (!top || !bottom || !railReady || !document.querySelector('.sidebar').classList.contains('collapsed')) return;
   // Same spacing rule as the Mac: the gap between buttons shrinks a little when space is short.
-  const gap = Math.max(18, Math.min(30, Math.round((top.clientHeight + bottom.clientHeight - 60 - RAIL_PAGES.length * 40) / RAIL_PAGES.length)));
-  const value = (RAIL_PAGES.find((p) => p.page === shownPage) || RAIL_PAGES[0]).id;
-  for (const [frame, group] of [[top, RAIL_PAGES.filter((p) => !RAIL_BOTTOM.has(p.id))], [bottom, RAIL_PAGES.filter((p) => RAIL_BOTTOM.has(p.id))]]) {
+  const list = railPages();
+  const gap = Math.max(18, Math.min(30, Math.round((top.clientHeight + bottom.clientHeight - 60 - list.length * 40) / list.length)));
+  const value = (list.find((p) => p.page === shownPage) || list[0]).id;
+  for (const [frame, group] of [[top, list.filter((p) => !RAIL_BOTTOM.has(p.id))], [bottom, list.filter((p) => RAIL_BOTTOM.has(p.id))]]) {
     const props = {
       items: JSON.stringify(group.map((p) => ({ id: p.id, label: p.label, icon: p.id }))),
       value,
@@ -606,7 +637,7 @@ window.__lockenRailMessage = (value) => {
   const message = String(value);
   if (message === 'ready') { railReady = true; lastRailProps = {}; updateRail(); }
   else if (message.startsWith('select:')) {
-    const picked = RAIL_PAGES.find((p) => p.id === message.slice(7));
+    const picked = railPages().find((p) => p.id === message.slice(7));
     if (picked) showPage(picked.page);
   }
 };
@@ -1425,10 +1456,12 @@ $('note-delete').addEventListener('click', () => {
 const PAGE_THEME = {
   dashboard: { accent: '#BE123C', light: '#E06683', top: '#17080D' },
   focus: { accent: '#8C33E6', light: '#CCA3F5', top: '#0F0A17' },
+  assistant: { accent: '#FB7158', light: '#FCAA9B', top: '#170C0A' },
   habits: { accent: '#F59E0B', light: '#F9C46A', top: '#0D0F17' },
   analytics: { accent: '#38BDF8', light: '#88D7FA', top: '#080F17' },
   notes: { accent: '#8B5CF6', light: '#B99DF9', top: '#120D1A' },
   settings: { accent: '#94A3B8', light: '#C2CBD6', top: '#0D0D12' },
+  admin: { accent: '#8C33E6', light: '#CCA3F5', top: '#0F0A17' },
 };
 let fiberColor = '140, 51, 230';
 function applyTheme(page) {
@@ -1459,10 +1492,12 @@ invoke('user_name').then((name) => { windowsUserName = String(name || ''); updat
 const CARD_GLOW = {
   dashboard: ['#BE123C', '#E02673', '#F59E0B'],
   focus: ['#8C33E6', '#E02673', '#3352C7'],
+  assistant: ['#FB7158', '#E02673', '#F59E0B'],
   habits: ['#F59E0B', '#D97706', '#BE123C'],
   analytics: ['#F59E0B', '#D97706', '#BE123C'],
   notes: ['#8B5CF6', '#8C33E6', '#E02673'],
   settings: ['#94A3B8', '#3352C7', '#8B5CF6'],
+  admin: ['#8C33E6', '#3352C7', '#8B5CF6'],
 };
 const avatarCache = new Map();
 /** The Mac's monogram avatar: your initial on an amber-to-obsidian circle. */
@@ -2365,6 +2400,7 @@ async function refreshAI() {
   $('ai-key-label').textContent = aiProvider ? `${aiProvider} API key saved in Windows Credential Manager` : '';
   $('rephrase').hidden = !on || !adult;
   updateRephraseButton();
+  refreshAssistantSettings();
 }
 function updateRephraseButton() { $('rephrase').disabled = !goal.value.trim() || $('rephrase').classList.contains('busy'); }
 $('ai-toggle').addEventListener('change', () => {
@@ -2944,6 +2980,42 @@ listen('checkin-answer', (event) => {
   if (reduce) draw(0); else requestAnimationFrame(loop);
   window.addEventListener('resize', () => draw(performance.now()));
 })();
+
+// ---------- Assistant: the main window's own functions it may read and (after the student confirms) call ----------
+initAssistant({
+  userId: () => user?.id || '',
+  aiAdult: () => aiAdult(),
+  aiEnabled: () => aiEnabled(),
+  aiProvider: () => aiProvider,
+  todayStats: () => loadStats(),
+  weekMinutes: () => {
+    let all = {};
+    try { all = JSON.parse(localStorage.getItem(statsKey()) || '{}'); } catch { /* none yet */ }
+    return [...Array(7)].reduce((sum, _, i) => sum + (all[addDays(new Date(), -i).toLocaleDateString('en-CA')]?.minutes || 0), 0);
+  },
+  session: () => session,
+  habitsToday: () => {
+    const now = new Date();
+    return loadHabits().map(normalizeHabit).filter((h) => isScheduled(h, now)).map((h) => ({ id: h.id, name: h.name, done: isHabitDone(h, now), streak: habitStreak(h) }));
+  },
+  assignments: () => upcoming(pendingAssignments()).map((a) => ({ id: a.id, title: a.title, course: a.course, due: a.due ? dueText(a).replace(/^(Was due|Due) /, '') : '' })),
+  canvasLinked: () => Boolean(canvas.linked),
+  startSession: async (text, minutes) => { showPage('focus'); await startSession(text, minutes); },
+  completeStep: (step) => { step.done = true; renderMilestones(); },
+  checkOffAssignment: (id) => { const set = loadChecked(); set.add(id); saveChecked(set); renderCanvas(); },
+  completeHabit: (id) => toggleHabit(id, dayKey(new Date())),
+  addNote: (title, body) => {
+    const list = loadNotes();
+    if (list.length >= 500) throw new Error('full');
+    list.push({ id: crypto.randomUUID(), title, body, updatedAt: Date.now() });
+    saveNotes(list);
+  },
+  showPage: (page) => showPage(page),
+  pauseSession: () => { showPage('focus'); $('pause-toggle').click(); },
+  resumeSession: () => { showPage('focus'); $('pause-toggle').click(); },
+});
+// The Mac's BorderGlow on Locken's buttons: a glow in the current tab's colour that follows the pointer near the edge.
+mountButtonGlow();
 
 // ---------- Start ----------
 (async () => {

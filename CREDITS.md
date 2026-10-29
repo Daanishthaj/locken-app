@@ -17,6 +17,9 @@ Locken uses the open-source libraries, fonts and assets below. Each one keeps it
 | @hugeicons/core-free-icons, @hugeicons/react | Mac app web views | MIT |
 | KokoroCoreML (Jud/kokoro-coreml 0.11.2) and BARTG2P (Jud/swift-bart-g2p) | Mac app (Assistant voice) | Apache-2.0 |
 | Kokoro-82M voice model and voices (hexgrad), downloaded on request from the kokoro-coreml release `models-2026-03-23` | Mac app (Assistant voice, not bundled) | Apache-2.0 |
+| Kokoro-82M ONNX model (onnx-community/Kokoro-82M-v1.0-ONNX, revision 1939ad2a, `model_quantized.onnx`) | Windows app (Assistant voice, downloaded on request, SHA-256 checked) | Apache-2.0 |
+| Kokoro af_heart voice (`windows/public/kokoro/af_heart.bin`) and misaki word lists (`us_gold.json`, `us_silver.json`, `vocab_index.json`) | Windows app (Assistant voice) | Apache-2.0 |
+| onnxruntime-web 1.30.0 | Windows app (Assistant voice) | MIT |
 | Tauri 2, @tauri-apps/api, tauri-plugin-opener | Windows app | Apache-2.0 or MIT |
 | serde, serde_json, sysinfo, keyring | Windows app | MIT or Apache-2.0 |
 

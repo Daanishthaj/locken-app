@@ -712,6 +712,7 @@ struct AuthGate: View {
         AdminManager.shared.activateAccount()
         WorkspaceLineup.shared.activateAccount()
         AITaskFormatter.shared.activateAccount()
+        ElevenLabsVoice.shared.activateAccount()
         AppleNotesService.shared.activateAccount()
         if switched {
             // A different account never sees the last one's conversation, and its own history loads.

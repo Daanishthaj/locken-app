@@ -18,6 +18,7 @@ struct AdminData {
         let email: String
         let provider: String
         let confirmed: Bool
+        var banned = false
         let created: Date?
         let lastSeen: Date?
         let usage: Usage?
@@ -106,6 +107,7 @@ struct AdminData {
             return User(id: id, email: $0["email"] as? String ?? "",
                         provider: $0["provider"] as? String ?? "email",
                         confirmed: ($0["confirmed"] as? Bool) ?? true,
+                        banned: ($0["banned"] as? Bool) ?? false,
                         created: Self.date($0["createdAt"]), lastSeen: Self.date($0["lastSignInAt"]),
                         usage: usageByID[id], isAdmin: adminIDs.contains(id))
         }

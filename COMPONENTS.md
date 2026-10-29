@@ -125,7 +125,7 @@ import ProfileCard from './ProfileCard';
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 <ProfileCard
-  name="Your Name"
+  name="Mohammed Sir"
   title=""
   handle="your-username"
   status="Online"
@@ -749,7 +749,7 @@ SignatureText(text: "\(name)?", size: 30, delay: 0.25, playKey: userID)
 
 **Focus mode sound (Mac).** `FocusSound` (in `TestAppStateManager.swift`) plays when the timer goes from stopped to running, a start or a resume: about 1.4 s, synthesised (no audio file), a band-pass-filtered swell of air rising from 350 Hz to 3.5 kHz into two chime notes (E5, then A5) and a short echo tail, peak 0.5 at volume 0.6, following the Mac's output volume and mute. Like AirPods' noise cancellation turning on.
 
-**The toggle button (`SidebarToggleIcon`).** One button for both directions, from the icon the maintainer supplied (a rounded square in the text colour with a panel cut out of its left side; the panel is wide while the sidebar is open and narrow once it is collapsed). It floats over the sidebar: in the header's corner when open, sliding to the bottom of the rail when collapsed, while the panel morphs over 0.35 s (`cubic-bezier(0.4, 0, 0.2, 1)`). Mac: native SwiftUI (`BlendablePath` parses the two SVG paths and `SidebarPanelShape` blends their points; checked in a scratch harness: narrow panel's right edge at 10, wide at 14, halfway at 12). Windows: inline SVG with a CSS `d: path(...)` transition on `.toggle-panel` (`windows/src/style.css`). Reduce Motion: no animation. The icon's original is a React `motion` component; it is not a dependency here, and its original author isn't credited yet because we don't know it.
+**The toggle button (`SidebarToggleIcon`).** One button for both directions, from the icon Mohammed Sir supplied (a rounded square in the text colour with a panel cut out of its left side; the panel is wide while the sidebar is open and narrow once it is collapsed). It floats over the sidebar: in the header's corner when open, sliding to the bottom of the rail when collapsed, while the panel morphs over 0.35 s (`cubic-bezier(0.4, 0, 0.2, 1)`). Mac: native SwiftUI (`BlendablePath` parses the two SVG paths and `SidebarPanelShape` blends their points; checked in a scratch harness: narrow panel's right edge at 10, wide at 14, halfway at 12). Windows: inline SVG with a CSS `d: path(...)` transition on `.toggle-panel` (`windows/src/style.css`). Reduce Motion: no animation. The icon's original is a React `motion` component; it is not a dependency here, and its original author isn't credited yet because we don't know it.
 
 ### 32. LogoLoop (React Bits)
 

@@ -307,7 +307,7 @@ enum DotoFont {
         set { lock.lock(); scale = newValue >= 1.5 ? 2 : 1; lock.unlock() }
     }
 
-    /// Text requested below this size uses Montserrat at its own size; the rest is Doto, on every screen (the maintainer
+    /// Text requested below this size uses Montserrat at its own size; the rest is Doto, on every screen (Mohammed
     /// Sir wants the dotted look kept on standard monitors too, 2026-10-18).
     static var minimumSize: CGFloat { 13 }
 

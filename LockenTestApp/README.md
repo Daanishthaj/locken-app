@@ -61,7 +61,7 @@ KissaFocus/
 
 1. Navigate to the project directory:
    ```bash
-   cd "LockenTestApp"
+   cd "/Users/daanu/Desktop/Jarvis-HQ/Kissa focus/LockenTestApp"
    ```
 
 2. Open in Xcode:

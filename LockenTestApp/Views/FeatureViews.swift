@@ -1360,6 +1360,9 @@ public struct TestSettingsView: View {
                 AssistantHotkeyCard()
                     .scrollReveal()
 
+                AssistantVoiceCard()
+                    .scrollReveal()
+
                 OtherMediaCard()
                     .scrollReveal()
 
@@ -2453,6 +2456,92 @@ struct AssistantHotkeyCard: View {
         .padding(Spacing.l)
         .frame(maxWidth: .infinity, alignment: .leading)
         .innerObsidianCard(cornerRadius: 16)
+    }
+}
+
+/// Which voice the Assistant speaks with: Locken's own voice on this Mac, or an ElevenLabs clone with the student's key.
+struct AssistantVoiceCard: View {
+    @ObservedObject private var voice = ElevenLabsVoice.shared
+    @State private var keyInput = ""
+    @State private var message: String?
+    @State private var saving = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Assistant voice")
+                    .font(.appFont(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                Text("Locken's own voice runs on this Mac. The other voices come from ElevenLabs and need your ElevenLabs API key: while one is picked, each reply Locken says is sent to ElevenLabs as text to turn into speech. Nothing else is shared, and if ElevenLabs can't be reached, Locken's own voice speaks.")
+                    .font(.appFont(size: 11))
+                    .foregroundColor(.white.opacity(0.55))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            JellyRadioPicker(
+                items: voice.choiceNames,
+                selection: Binding(get: { voice.selectedName }, set: { voice.select(name: $0) }),
+                label: "Assistant voice"
+            )
+            if voice.hasKey {
+                HStack(spacing: 8) {
+                    Image(systemName: "key.fill")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.5))
+                        .accessibilityHidden(true)
+                    Text("ElevenLabs API key saved in your Keychain")
+                        .font(.appFont(size: 12))
+                        .foregroundColor(.white.opacity(0.75))
+                    Spacer()
+                    Button("Remove") {
+                        voice.removeKey()
+                        message = nil
+                    }
+                    .buttonStyle(.plain)
+                    .quietAction()
+                }
+            } else if voice.selectedID != nil {
+                HStack(spacing: 8) {
+                    SecureField("Paste your ElevenLabs API key", text: $keyInput)
+                        .textFieldStyle(.plain)
+                        .font(.appFont(size: 12))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.white.opacity(0.04))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .onSubmit(saveKey)
+                    Button(saving ? "Checking…" : "Save", action: saveKey)
+                        .buttonStyle(.plain)
+                        .quietAction()
+                        .disabled(saving || keyInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+            if let message {
+                Text(message)
+                    .font(.appFont(size: 11))
+                    .foregroundColor(SquircleTokens.textGold)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(Spacing.l)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .innerObsidianCard(cornerRadius: 16)
+    }
+
+    private func saveKey() {
+        let key = keyInput
+        saving = true
+        message = nil
+        Task {
+            do {
+                let found = try await voice.saveKey(key)
+                keyInput = ""
+                if found == 0 { message = "Key saved, but these voices belong to a different ElevenLabs account, so Locken's own voice will speak." }
+            } catch {
+                message = error.localizedDescription
+            }
+            saving = false
+        }
     }
 }
 

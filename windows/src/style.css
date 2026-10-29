@@ -100,7 +100,7 @@ input:focus-visible { outline: 2px solid var(--violet); outline-offset: 1px; bor
   cursor: pointer;
   transition: background-color 0.2s ease, opacity 0.2s ease;
 }
-.btn:hover:not(:disabled) { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25), 0 0 18px rgba(140, 51, 230, 0.55); }
+.btn:hover:not(:disabled) { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25), 0 0 calc(10px + 18px * var(--glow, 0)) color-mix(in srgb, var(--accent-light) 55%, transparent); }
 .btn:disabled { opacity: 0.45; cursor: default; }
 .btn:focus-visible, .quiet:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
 
@@ -247,7 +247,7 @@ select:focus-visible { outline: 2px solid var(--violet); outline-offset: 1px; bo
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14) inset;
   transition: box-shadow 0.2s ease, opacity 0.2s ease;
 }
-.primary:hover:not(:disabled) { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.28) inset, 0 0 18px rgba(140, 51, 230, 0.55); }
+.primary:hover:not(:disabled) { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.28) inset, 0 0 calc(10px + 18px * var(--glow, 0)) color-mix(in srgb, var(--accent-light) 55%, transparent); }
 .primary:disabled { opacity: 0.5; cursor: default; }
 .primary:focus-visible, .google:focus-visible { outline: 2px solid var(--violet-pill); outline-offset: 3px; }
 
@@ -946,3 +946,100 @@ kbd { min-width: 26px; padding: 3px 8px; border-radius: 8px; text-align: center;
 .lineup-move:disabled { opacity: 0.3; cursor: default; }
 .lineup-move:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
 @media (forced-colors: active) { .lineup-logo { filter: none; forced-color-adjust: auto; } }
+
+/* ---------- Button glow (the Mac app's BorderGlow): three shades of the tab's colour light the border around the
+   pointer's angle as it nears the edge; glow.js sets --glow (0 to 1) and --glow-angle. ---------- */
+.primary, .btn, .quiet-action { position: relative; }
+.primary::after, .btn::after, .quiet-action::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
+  background: conic-gradient(from calc(var(--glow-angle, 0deg) - 25deg), transparent 0deg,
+    color-mix(in srgb, var(--accent) 70%, #fff) 10deg, var(--accent) 25deg, color-mix(in srgb, var(--accent) 75%, #000) 40deg, transparent 50deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: var(--glow, 0); transition: opacity 0.15s ease;
+}
+.primary:disabled::after, .btn:disabled::after, .quiet-action:disabled::after { opacity: 0; }
+
+/* A small secondary action (the Mac app's quietAction): dark glass pill. */
+.quiet-action { align-self: flex-start; padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06); color: #fff; font: 600 13px var(--sans); cursor: pointer; }
+.quiet-action:hover:not(:disabled) { border-color: rgba(255, 255, 255, 0.28); box-shadow: 0 0 calc(6px + 14px * var(--glow, 0)) color-mix(in srgb, var(--accent-light) 45%, transparent); }
+.quiet-action.danger { color: #ff9b9b; }
+.quiet-action:disabled { opacity: 0.5; cursor: default; }
+.quiet-action:focus-visible { outline: 2px solid var(--accent-light); outline-offset: 3px; }
+
+/* ---------- Assistant (the Mac app's AssistantView) ---------- */
+#page-assistant { display: flex; flex-direction: column; gap: 16px; }
+#page-assistant[hidden] { display: none; }
+.strands { display: block; width: 100%; height: 150px; border: 0; background: transparent; pointer-events: none; margin: -8px 0 -12px; }
+.assistant-cols { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 900px) { .assistant-cols { grid-template-columns: 1fr; } .assistant-history { order: 2; } }
+.assistant-history { display: flex; flex-direction: column; gap: 10px; padding: 18px; max-height: 62vh; }
+.assistant-search { width: 100%; margin: 0; color: #fff; font: 400 13px var(--sans); }
+.assistant-chats { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; min-height: 0; }
+.assistant-day { margin: 8px 0 2px !important; }
+.assistant-chat { display: flex; align-items: center; gap: 4px; border-radius: 10px; }
+.assistant-chat.selected { background: rgba(255, 255, 255, 0.08); }
+.assistant-chat-open { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 7px 8px;
+  border: 0; background: none; color: #fff; text-align: left; cursor: pointer; border-radius: 10px; }
+.assistant-chat-open:hover { background: rgba(255, 255, 255, 0.05); }
+.assistant-chat-open:focus-visible { outline: 2px solid var(--accent-light); outline-offset: 1px; }
+.assistant-chat-title { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 13px var(--sans); }
+.assistant-card { display: flex; flex-direction: column; gap: 12px; padding: 22px; }
+.assistant-off { margin: 0; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.assistant-log { display: flex; flex-direction: column; gap: 10px; min-height: 220px; max-height: 46vh; overflow-y: auto; padding-right: 4px; }
+.assistant-hint { margin: auto 0; text-align: center; }
+.assistant-msg { margin: 0; max-width: 82%; padding: 10px 14px; border-radius: 16px; font: 500 14px/1.5 var(--sans); white-space: pre-wrap; overflow-wrap: anywhere; }
+.assistant-msg.student { align-self: flex-end; background: color-mix(in srgb, var(--accent) 26%, rgba(43, 43, 48, 0.8)); }
+.assistant-msg.assistant { align-self: flex-start; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.08); }
+.assistant-msg.thinking { color: rgba(255, 255, 255, 0.6); }
+.assistant-proposal { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 12%, rgba(20, 18, 24, 0.9)); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+.assistant-proposal[hidden] { display: none; }
+.assistant-proposal p { margin: 0; font: 600 14px var(--sans); }
+.assistant-proposal-row { display: flex; justify-content: flex-end; align-items: center; gap: 14px; }
+.assistant-form { display: flex; gap: 10px; align-items: center; }
+.assistant-form input { flex: 1; margin: 0; color: #fff; font: 400 14px var(--sans); }
+.assistant-foot { padding-top: 10px; border-top: 1px solid var(--line); }
+.assistant-foot .fine { margin: 0; }
+.voice-tiles { display: flex; flex-wrap: wrap; gap: 8px; }
+.voice-tile { padding: 10px 14px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.85); font: 600 13px var(--sans); cursor: pointer; }
+.voice-tile[aria-checked="true"] { border-color: color-mix(in srgb, var(--accent) 70%, transparent); background: color-mix(in srgb, var(--accent) 18%, transparent); color: #fff; }
+.voice-tile:hover { border-color: rgba(255, 255, 255, 0.24); }
+.voice-tile:focus-visible { outline: 2px solid var(--accent-light); outline-offset: 2px; }
+
+/* ---------- Admin (owner only) ---------- */
+.admin-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.admin-body { display: flex; flex-direction: column; gap: 14px; }
+.admin-kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+.admin-kpi { padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; }
+.admin-kpi .fine { margin: 0; }
+.admin-kpi-value { margin: 0; font: 900 30px var(--doto); font-variation-settings: "ROND" 100; color: #fff; }
+.admin-panel { padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+.admin-row { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; padding: 4px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+.admin-row:last-child { border-bottom: 0; }
+.admin-row .fine { margin: 0; white-space: nowrap; }
+.admin-search { width: 100%; max-width: 360px; margin: 0; color: #fff; font: 400 13px var(--sans); }
+.admin-accounts { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 900px) { .admin-accounts { grid-template-columns: 1fr; } }
+.admin-list { padding: 10px; display: flex; flex-direction: column; gap: 2px; max-height: 60vh; overflow-y: auto; }
+.admin-user { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 9px 10px; border: 0; border-radius: 10px;
+  background: none; color: #fff; text-align: left; cursor: pointer; }
+.admin-user .fine { grid-column: 1 / -1; margin: 0; }
+.admin-user:hover { background: rgba(255, 255, 255, 0.05); }
+.admin-user.selected { background: rgba(255, 255, 255, 0.09); }
+.admin-user:focus-visible { outline: 2px solid var(--accent-light); outline-offset: 1px; }
+.admin-email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 13px var(--sans); }
+.admin-tags { display: inline-flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.admin-tag { padding: 1px 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); font: 700 10px var(--sans); color: rgba(255, 255, 255, 0.75); }
+.admin-tag.banned { background: rgba(239, 68, 68, 0.22); color: #ff9b9b; }
+.admin-tag.admin { background: color-mix(in srgb, var(--accent) 30%, transparent); color: #fff; }
+.admin-detail .quiet-action { margin-top: 8px; }
+.admin-confirm { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; padding: 12px 14px; border-radius: 14px;
+  background: rgba(14, 12, 18, 0.92); border: 1px solid rgba(255, 255, 255, 0.1); }
+.admin-confirm p { margin: 0; font: 500 13px var(--sans); }
+.admin-confirm-row { display: flex; justify-content: flex-end; align-items: center; gap: 14px; }
+.admin-confirm-row .quiet-action { align-self: auto; margin: 0; }
+.admin-feedback { display: flex; flex-direction: column; gap: 10px; }
+.admin-message { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 400 13px/1.55 var(--sans); color: rgba(255, 255, 255, 0.85); }
+.sidebar.collapsed .rail-icons-bottom.two { height: 160px; }

@@ -164,10 +164,12 @@
       <button class="nav-item" data-page="dashboard" type="button"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span>New</button>
       <div class="side-divider"></div>
       <button class="nav-item" data-page="focus" type="button"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3 5 14h6l-1 7 8-11h-6z"/></svg></span>Focus Session<span class="nav-live" id="nav-live" hidden></span></button>
+      <button class="nav-item" data-page="assistant" type="button"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 12h-2"/></svg></span>Assistant</button>
       <button class="nav-item" data-page="habits" type="button"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21c-4 0-7-2.7-7-6.5C5 10 9 8 9 4c3 1.5 4.5 4 4.5 6 1-1 1.5-2 1.5-3 2.5 2 4 4.6 4 7.5C19 18.3 16 21 12 21z"/></svg></span>Habit Tracker</button>
       <button class="nav-item" data-page="analytics" type="button"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></span>Analytics</button>
       <button class="nav-item" data-page="notes" type="button"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span>Notes</button>
       <button class="nav-item" data-page="settings" type="button"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></span>Settings</button>
+      <button class="nav-item" data-page="admin" id="nav-admin" type="button" hidden><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>Admin</button>
       <!-- Collapsed: the pages as React Bits GlassIcons buttons (the Mac app's SidebarRail). Loaded the first time it opens. -->
       <iframe class="rail-icons" id="rail-icons" data-src="/glassicons/glassicons.html" title="Pages"></iframe>
       <!-- Settings, kept apart at the bottom of the rail (the Mac keeps Settings and Admin there). -->
@@ -446,6 +448,42 @@
 
       <!-- Notes -->
       <!-- Notes (the Mac app's TestProjectStudioView notes column; Reminders and Apple Notes are Mac-only). -->
+      <!-- Assistant (the Mac app's AssistantView): typed here, replies read aloud if the student wants. -->
+      <section class="page" id="page-assistant" hidden>
+        <header class="page-head">
+          <h1 class="script page-cursive">Assistant</h1>
+          <p class="page-sub">Ask Locken to plan your work, start a session or check in on how it's going.</p>
+        </header>
+        <iframe class="strands" id="strands" src="/strands/strands.html" title="" aria-hidden="true" tabindex="-1"></iframe>
+        <div class="assistant-cols">
+          <aside class="card assistant-history" aria-label="Past conversations">
+            <div class="notes-head"><p class="mini-label">HISTORY</p><button class="link" id="assistant-new" type="button">New chat</button></div>
+            <input class="field-bg assistant-search" id="assistant-search" maxlength="80" placeholder="Search chats" aria-label="Search chats">
+            <div class="assistant-chats" id="assistant-chats"></div>
+            <p class="fine" id="assistant-chats-empty">Your conversations show up here, kept on this PC.</p>
+            <button class="link" id="assistant-clear" type="button" hidden>Delete all</button>
+          </aside>
+          <div class="card assistant-card">
+            <p class="fine assistant-off" id="assistant-off" hidden><span id="assistant-off-text"></span> <button class="link inline-link" id="assistant-settings" type="button">Open Settings</button></p>
+            <div class="assistant-log" id="assistant-log" role="log" aria-live="polite"></div>
+            <div class="assistant-proposal" id="assistant-proposal" hidden>
+              <p id="assistant-proposal-text"></p>
+              <div class="assistant-proposal-row"><button class="link" id="assistant-dismiss" type="button">Not now</button><button class="primary pill-btn small-pill" id="assistant-confirm" type="button">Do it</button></div>
+            </div>
+            <p class="error" id="assistant-error" role="alert"></p>
+            <form class="assistant-form" id="assistant-form" novalidate>
+              <input class="field-bg" id="assistant-input" maxlength="1000" autocomplete="off" placeholder="Ask Locken…" aria-label="Message to Locken">
+              <button class="primary pill-btn small-pill" id="assistant-send" type="submit" disabled>Send</button>
+            </form>
+            <div class="setting-row assistant-foot">
+              <div><p class="setting-title">Read replies aloud</p><p class="fine" id="assistant-voice-label"></p></div>
+              <button class="link" id="assistant-stop" type="button" hidden>Stop</button>
+              <label class="switch"><input type="checkbox" id="assistant-speak" aria-label="Read replies aloud"><span></span></label>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="page" id="page-notes" hidden>
         <header class="page-head">
           <h1 class="script page-cursive">Notes</h1>
@@ -525,6 +563,20 @@
                 </form>
                 <p class="error" id="ai-key-error" role="alert"></p>
               </div>
+            </div>
+            <!-- The Mac app's AssistantVoiceCard: a Windows voice, or one of Locken's ElevenLabs voices with the student's own key. -->
+            <div class="card setting-card" id="voice-card" hidden>
+              <p class="setting-title">Assistant voice</p>
+              <p class="fine">Replies are read with a Windows voice, or with Locken's own voice on this PC. With your own ElevenLabs key, Locken's cloned voices are here too; only the reply text goes to ElevenLabs.</p>
+              <div class="voice-tiles" id="voice-tiles" role="radiogroup" aria-label="Assistant voice"></div>
+              <div class="ai-key-saved" id="voice-key-saved" hidden><span>ElevenLabs key saved</span><button class="link" id="voice-key-remove" type="button">Remove</button></div>
+              <form class="ai-key-form" id="voice-key-form" novalidate>
+                <input id="voice-key" type="password" autocomplete="off" spellcheck="false" maxlength="200" placeholder="Paste an ElevenLabs API key" aria-label="ElevenLabs API key">
+                <button class="primary pill-btn small-pill" id="voice-key-save" type="submit" disabled>Save</button>
+              </form>
+              <p class="error" id="voice-key-error" role="alert"></p>
+              <p class="fine">Locken's own voice (Kokoro) runs on this PC: nothing is sent to speak. It's a one-time download from Hugging Face, checked before it's kept. <button class="link inline-link" id="kokoro-remove" type="button" hidden>Remove the download</button></p>
+              <p class="error" id="kokoro-error" role="alert"></p>
             </div>
             <div class="card setting-card">
               <p class="setting-title">Blocked apps</p>
@@ -649,6 +701,20 @@
         </div>
       </section>
 
+      <!-- Admin (owner only; the Mac app's admin console, compact). The server checks the account is an admin. -->
+      <section class="page" id="page-admin" hidden>
+        <header class="page-head">
+          <h1 class="script page-cursive">Admin</h1>
+          <p class="page-sub" id="admin-sub">Accounts, feedback and how Locken's servers are doing.</p>
+        </header>
+        <div class="admin-bar">
+          <div class="pills" id="admin-tabs" role="radiogroup" aria-label="Admin section"></div>
+          <button class="link" id="admin-refresh" type="button">Refresh</button>
+        </div>
+        <p class="error" id="admin-error" role="alert"></p>
+        <div class="admin-body" id="admin-body"></div>
+      </section>
+
     </main>
 
     <!-- Commitment countdown (same as the Mac app's "Stay with it?") -->
@@ -744,7 +810,10 @@
         <li><strong>Doto</strong> font by The Doto Project Authors: SIL Open Font License 1.1 (full text in the app as fonts/Doto-OFL.txt)</li>
         <li><strong>Montserrat</strong> font by The Montserrat Project Authors: SIL Open Font License 1.1 (full text in the app as fonts/Montserrat-OFL.txt)</li>
         <li><strong>3D orb</strong> on the dashboard, modified from Supavec's globe component (Apache-2.0); it uses <strong>React</strong> (Meta, MIT) and <strong>three.js</strong> (MIT)</li>
-        <li><strong>ElectricLogo</strong> in session setup, <strong>DitherVeil</strong> on the Focus page and <strong>ProfileCard</strong> in the sidebar from React Bits by David Haz (reactbits.dev): MIT + Commons Clause</li>
+        <li><strong>Kokoro-82M</strong> voice model and the af_heart voice by hexgrad (ONNX version by onnx-community), for Locken's own Assistant voice, downloaded on request: Apache-2.0</li>
+        <li><strong>misaki</strong> English word lists (us_gold, us_silver) by hexgrad, via MisakiSwift by mlalma: Apache-2.0</li>
+        <li><strong>ONNX Runtime Web</strong> by Microsoft, which runs the voice on this PC: MIT</li>
+        <li><strong>ElectricLogo</strong> in session setup, <strong>DitherVeil</strong> on the Focus page, <strong>Strands</strong> on the Assistant page and <strong>ProfileCard</strong> in the sidebar from React Bits by David Haz (reactbits.dev): MIT + Commons Clause</li>
         <li><strong>Pinyon Script</strong> font by The Pinyon Project Authors: SIL Open Font License 1.1 (full text in the app as fonts/PinyonScript-OFL.txt)</li>
         <li><strong>Pwned Passwords</strong> by Have I Been Pwned (haveibeenpwned.com), used for the breached-password check: Creative Commons Attribution 4.0</li>
       </ul>

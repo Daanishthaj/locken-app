@@ -37,9 +37,6 @@ ruvector.db
 .claude/proven-config.json
 .claude/.proven-config-version
 
-# Release artifacts are published on the website, not in source
+# Release binaries are served from the website, not stored in git
 web/public/Locken.dmg
 web/public/Locken-Setup.exe
-.env
-.env.*
-!.env.example

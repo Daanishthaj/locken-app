@@ -9,6 +9,12 @@ export async function invoke(command, args) {
     case 'ai_rephrase': await new Promise((r) => setTimeout(r, 600)); return 'Complete 15 practice problems for Calculus Chapter 4';
     case 'ai_milestones': await new Promise((r) => setTimeout(r, 600)); return ['Review Chapter 4 examples', 'Solve problems 1-8', 'Solve problems 9-15', 'Check answers and fix mistakes'];
     case 'ai_week_digest': await new Promise((r) => setTimeout(r, 600)); return '### Due this week\n- **Soon:** Unit 1 Review (Precalculus), due Tue 11:59 PM\n- Lab report (Biology), due Thu 9:00 AM\n### Busy days\n- Tuesday: two deadlines on one day.\n### Plan\n- Monday after school: 45 minutes on Unit 1 Review.\n- Wednesday: draft the lab report <b>not html</b>.';
+    case 'ai_assistant': await new Promise((r) => setTimeout(r, 700)); return /start|session/i.test(args?.message || '') ? '{"say":"Let\'s do it. Want me to start 25 minutes on your Unit 1 Review?","action":{"type":"start_session","goal":"Finish the Unit 1 Review","minutes":25}}' : '{"say":"Start with the Unit 1 Review, since it\'s due tomorrow. A 25-minute session should get most of it done.","action":null}';
+    case 'voice_key_status': return Boolean(window.__voiceKey);
+    case 'voice_list': return window.__voiceKey ? [{ id: '6i4Eb1eUSagmAhMPqhYS', name: 'Hype' }, { id: 'rFtEb2MlDt7EXDbMtvop', name: 'Calm' }] : [];
+    case 'voice_save_key': if (String(args?.key || '').length < 20) throw "That doesn't look like an ElevenLabs API key."; window.__voiceKey = true; return [{ id: '6i4Eb1eUSagmAhMPqhYS', name: 'Hype' }, { id: 'rFtEb2MlDt7EXDbMtvop', name: 'Calm' }];
+    case 'voice_remove_key': window.__voiceKey = false; return null;
+    case 'voice_speech': throw 'preview';
     case 'canvas_status': return window.__canvas ?? null;
     case 'canvas_unlink': window.__canvas = null; return null;
     case 'canvas_link_feed': throw 'That link didn\'t return a Canvas calendar feed.';

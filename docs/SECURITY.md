@@ -20,7 +20,7 @@ Only the latest published build gets security fixes. The website's `version.json
 ## Reporting a vulnerability
 
 - Don't open a public issue, and don't test against other people's accounts.
-- Contact: **mr.tryhard66@gmail.com**. Put "Locken security" in the subject.
+- Contact: **daanu.focus@gmail.com**. Put "Locken security" in the subject.
 - Include what you found, how to reproduce it, and what an attacker could do with it.
 - You'll get a reply within 7 days. Fixes for anything that exposes account data ship before anything else.
 
@@ -32,7 +32,7 @@ These hold for every change. The reasons and details are in the companion docume
 2. **The server decides who you are.** Identity comes from the verified access token (`auth.uid()` in policies, `GET /auth/v1/user` in code), never from anything the client sends.
 3. **Row Level Security on every table.** Policies are scoped to `auth.uid()`. The anon role has no privileges on account tables at all.
 4. **Data stays on the Mac by default.** Focus stats, screen usage, notes, habits and reminders never leave it. Accounts hold only email, name and avatar.
-5. **Secrets go in the Keychain.** Session tokens, Canvas tokens and AI keys live there, never in UserDefaults or plain files. On Windows the AI key sits in Credential Manager and only Rust reads it and calls the provider, so the web view never holds it.
+5. **Secrets go in the Keychain.** Session tokens, Canvas tokens, AI keys and the optional ElevenLabs key live there, never in UserDefaults or plain files. On Windows the AI key and the optional ElevenLabs key sit in Credential Manager and only Rust reads them and calls the provider, so the web view never holds them.
 6. **One error for a wrong email or password.** Sign-up and resets never reveal whether an account exists.
 7. **Sign-out reaches the server.** The session is revoked, not just forgotten locally.
 8. **Users see friendly errors.** Raw server and system errors stay in logs.

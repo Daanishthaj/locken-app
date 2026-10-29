@@ -4,6 +4,7 @@ mod canvas;
 mod media;
 mod secrets;
 mod tray;
+mod voice;
 mod workspace;
 
 use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder, WindowEvent};
@@ -131,6 +132,12 @@ pub fn run() {
             ai::ai_rephrase,
             ai::ai_milestones,
             ai::ai_week_digest,
+            ai::ai_assistant,
+            voice::voice_key_status,
+            voice::voice_save_key,
+            voice::voice_list,
+            voice::voice_remove_key,
+            voice::voice_speech,
             canvas::canvas_status,
             canvas::canvas_link_token,
             canvas::canvas_link_feed,

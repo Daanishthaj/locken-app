@@ -30,7 +30,7 @@ Check every item before shipping a build or merging a change to sign-in, data, t
 | 10 | Inputs validated server-side; output escaped | ✅ | Column grants, NOT NULL `user_id`, waitlist email length check; Canvas HTML stripped; tab-blocker site list sanitised before AppleScript (unit-tested); website uses `textContent` |
 | 11 | File uploads secured | ✅ | Not applicable: Locken accepts no uploads and has no storage buckets |
 | 12 | No SQL injection | ✅ | Supabase REST only, no string-built SQL in the apps |
-| 13 | Rate limits on login, sign-up, OTP and reset, plus client backoff | ✅ | Supabase server limits (one code email per user per 60 s); Mac backoff 30 s doubling to 5 min, saved across relaunches, covering sign-in, sign-up, codes, resends, authenticator setup and the Google exchange; Windows backoff 1 s doubling to 16 s; the unthrottled waitlist insert was closed. CAPTCHA not yet (needs a Turnstile account); Windows the same backoff (password, emailed code and authenticator code), saved across restarts |
+| 13 | Rate limits on login, sign-up, OTP and reset, plus client backoff | ✅ | Supabase server limits (one code email per user per 60 s); Mac backoff 30 s doubling to 5 min, saved across relaunches, covering sign-in, sign-up, codes, resends, authenticator setup and the Google exchange; Windows backoff 1 s doubling to 16 s; the unthrottled waitlist insert was closed. CAPTCHA site key in both apps, not enforced until the Supabase switch; Windows the same backoff (password, emailed code and authenticator code), saved across restarts |
 | 14 | Security headers and CORS; native equivalents | ✅ | `web/vercel.json`: CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, COOP; Permissions-Policy; no third-party scripts. Apps: App Transport Security default; Mac web views locked to bundled pages; Windows web view CSP limited to its own files, IPC, Supabase and HIBP |
 | 15 | Tested as an untrusted user | ✅ | 2026-10-18: the publishable key gets permission denied on `profiles`, `feedback`, `focus_sessions`, `admins`, `waitlist_subscribers` and `rpc/admin_analytics`; `delete-account` and `admin-overview` return 401 without a user token; another user's feedback reads as 0 rows. 2026-10-12: anon key gets 401 reading `profiles`, `focus_sessions`, `waitlist_subscribers` and inserting into `focus_sessions` and the waitlist; `rpc/mfa_requirement_met` isn't exposed (404); `auth/v1/admin/users` refuses the anon key (403); `delete-account` returns 401 with no token or the anon key |
 
@@ -60,7 +60,7 @@ From a list of the security holes most often found in AI-built apps. Each one, a
 | Database permissions too broad, poor tenant isolation | ✅ | RLS on every table with `auth.uid()` policies; app roles can update only `full_name` and `avatar_url`; anonymous probes refused |
 | Missing audit logs | ✅ | `audit.log` records account-data changes (column names only), readable by the server only |
 | No security monitoring | ⚠️ | Weekly CI scans and the Supabase security advisor; live alerting on the database needs a paid Supabase plan |
-| No backups | ⚠️ | Free Supabase plan has no automatic backups. Needs either the Pro plan (daily backups) or a scheduled export the maintainer sets up with their own database password |
+| No backups | ⚠️ | Free Supabase plan has no automatic backups. Needs either the Pro plan (daily backups) or a scheduled export Mohammed Sir sets up with his own database password |
 | Exposed internal dashboards | ✅ | The admin page and `admin-overview` function check the `admins` table on the server |
 | Missing security headers, insecure cookies | ✅ | Live site sends CSP, HSTS (preload), X-Frame-Options DENY, nosniff, Referrer-Policy, Permissions-Policy, COOP; the site sets no cookies; the apps keep tokens in Keychain / Credential Manager |
 | Unencrypted sensitive data | ✅ | TLS everywhere; tokens in the system keychain; local data relies on FileVault / BitLocker (stated in the Privacy Policy) |
@@ -115,8 +115,8 @@ Locken sends only service emails today: sign-in codes, security notices, account
 
 Both apps already send a Turnstile token when a site key is set. Do these **in this order**, or sign-in breaks for anyone on an older version:
 
-1. [ ] Owner: create a free Cloudflare account → Turnstile → Add widget, mode **Managed**, hostnames `locken-app.vercel.app` and `tauri.localhost`.
-2. [ ] Put the **site key** (public) in `LockenTestApp/Info.plist` → `LockenTurnstileSiteKey`, and in `windows/src/turnstile.js` → `TURNSTILE_SITE_KEY`.
+1. [x] Widget `Locken sign-in` created 2026-10-27 through the Cloudflare API (account `1d8d09aaec4cc5452cddc481c52e20cb`), mode **Managed**, hostnames `locken-app.vercel.app`, `tauri.localhost`, `localhost`, `127.0.0.1`. Site key `0x4AAAAAAFo_JiXIrKghT2dE`; secret checked against siteverify and not stored anywhere outside Cloudflare.
+2. [x] Put the **site key** (public) in `LockenTestApp/Info.plist` → `LockenTurnstileSiteKey`, and in `windows/src/turnstile.js` → `TURNSTILE_SITE_KEY`.
 3. [ ] Test a sign-in on both apps, release the Mac update and the Windows build, and wait until most users have updated.
 4. [ ] Update the Privacy Policy: Cloudflare checks sign-in requests for bots and receives the IP address and browser signals for that check.
 5. [ ] Owner, last: Supabase → Authentication → Attack Protection → **Enable CAPTCHA protection**, provider Turnstile, paste the **secret key** there (never in the apps or git).

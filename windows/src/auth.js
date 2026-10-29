@@ -432,3 +432,30 @@ export async function deleteAccount() {
   if (status !== 200) throw new AuthError("Couldn't delete your account right now. Try again.");
   await invoke('clear_session');
 }
+
+// ---------- Admin (owner only; same Edge Function as the Mac app) ----------
+// admin-overview checks on the server that the caller's verified account is listed in public.admins (and at aal2 when
+// it has an authenticator app); everyone else gets 403, so these calls give nobody anything.
+
+/** True only when the server says this account is an admin. Quiet: any failure means no Admin page. */
+export async function isAdmin() {
+  const result = await withSession('/functions/v1/admin-overview', { body: { check: true } }).catch(() => null);
+  return result?.status === 200 && result.json?.admin === true;
+}
+
+/** Accounts, feedback, events and server health for the Admin page. */
+export async function adminOverview() {
+  const result = await withSession('/functions/v1/admin-overview', { body: {} });
+  if (!result) throw new AuthError('Sign in again to continue.');
+  if (result.status === 403) throw new AuthError(result.json?.error === 'Enter your authenticator code first' ? 'Enter your authenticator code first: sign out and back in.' : "This account isn't an admin.");
+  if (result.status !== 200) throw new AuthError("Couldn't load the overview. Try again.");
+  return result.json;
+}
+
+/** Bans (sign-in refused, every session ended) or unbans an account. The server refuses your own and admins'. */
+export async function adminSetBan(userId, banned) {
+  const result = await withSession('/functions/v1/admin-overview', { body: { action: banned ? 'ban' : 'unban', userId } });
+  if (!result) throw new AuthError('Sign in again to continue.');
+  if (result.status === 403) throw new AuthError("This account isn't an admin.");
+  if (result.status !== 200) throw new AuthError(typeof result.json?.error === 'string' ? result.json.error.slice(0, 200) : "Couldn't change that account. Try again.");
+}

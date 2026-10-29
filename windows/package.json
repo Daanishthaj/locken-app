@@ -12,7 +12,8 @@
   "dependencies": {
     "@tauri-apps/api": "^2.5.0",
     "@tauri-apps/plugin-deep-link": "^2.6.2",
-    "@tauri-apps/plugin-opener": "^2.7.2"
+    "@tauri-apps/plugin-opener": "^2.7.2",
+    "onnxruntime-web": "1.30.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.5.0",

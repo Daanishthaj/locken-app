@@ -17,13 +17,13 @@
 	<key>CFBundleShortVersionString</key>
 	<string>2.0.8</string>
 	<key>CFBundleVersion</key>
-	<string>58</string>
+	<string>59</string>
 	<key>GoogleClassroomClientID</key>
 	<string></string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>LockenTurnstileSiteKey</key>
-	<string></string>
+	<string>0x4AAAAAAFo_JiXIrKghT2dE</string>
 	<key>NSAppleEventsUsageDescription</key>
 	<string>Locken reads the song playing in Spotify or Music (and the music or video playing in browser tabs on YouTube, YouTube Music, Spotify and SoundCloud) for its music widget and focus insights, and turns their volume down while the Assistant talks; the address of the browser tab in front so time on social media sites counts in Analytics; during a focus session with the Shield on, the addresses of your open tabs so it can close social media and YouTube tabs; and, if you connect Apple Notes, your notes' titles and first lines to list them next to your Locken notes. Tab addresses are checked, never saved. Everything stays on this Mac.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
@@ -31,7 +31,7 @@
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Created by mr.tryhard66@gmail.com</string>
+	<string>Created by daanu.focus@gmail.com</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Locken listens while the Assistant tab is open (you can pause it), so you can talk to it hands-free. Your voice is turned into text on this Mac and is never recorded or sent anywhere.</string>
 	<key>NSPrincipalClass</key>

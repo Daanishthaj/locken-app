@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 // Three pages: the main window, the check-in popup that drops in at the top of the screen, and the glow behind it.
 export default defineConfig({
   clearScreen: false,
+  worker: { format: 'es' }, // the Kokoro worker imports onnxruntime as a module
   server: { port: 1420, strictPort: true, fs: { allow: ['..'] } }, // shared/ lives next to windows/
   build: {
     target: 'es2022',

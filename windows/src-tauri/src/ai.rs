@@ -6,6 +6,7 @@
 
 use keyring::Entry;
 use regex::Regex;
+use serde::Deserialize;
 use serde_json::{json, Value};
 use std::sync::{Mutex, OnceLock};
 use std::time::Duration;
@@ -126,6 +127,76 @@ pub async fn ai_week_digest(account: String, today: String, lines: Vec<String>) 
     Ok(text.chars().take(6000).collect())
 }
 
+/// One earlier line of the Assistant conversation.
+#[derive(Deserialize)]
+pub struct Turn {
+    role: String,
+    text: String,
+}
+
+/// The Assistant (the Mac's `VoiceAssistant`, typed instead of spoken). `facts` are the app's own numbered lines
+/// (session, steps, habits, Canvas assignments, focus totals); the reply is JSON for the page to read:
+/// {"say": "...", "action": null or one action}. Nothing happens until the student confirms an action.
+#[tauri::command]
+pub async fn ai_assistant(account: String, now: String, facts: String, history: Vec<Turn>, message: String) -> Result<String, String> {
+    let message: String = message.trim().chars().take(1000).collect();
+    if message.is_empty() {
+        return Err("Type something to ask Locken.".into());
+    }
+    let text = ask(&account, &assistant_prompt(&now), &assistant_message(&facts, &history, &message), 500).await?;
+    let text = text.trim().to_string();
+    if text.is_empty() {
+        return Err(EMPTY.into());
+    }
+    Ok(text.chars().take(4000).collect())
+}
+
+fn assistant_message(facts: &str, history: &[Turn], message: &str) -> String {
+    let facts: String = facts.chars().take(6000).collect();
+    let earlier: Vec<String> = history
+        .iter()
+        .rev()
+        .take(8)
+        .rev()
+        .map(|t| {
+            let who = if t.role == "assistant" { "Locken" } else { "Student" };
+            format!("{who}: {}", t.text.chars().take(600).collect::<String>())
+        })
+        .collect();
+    let mut parts = vec![format!("Facts:\n{facts}")];
+    if !earlier.is_empty() {
+        parts.push(format!("Conversation so far:\n{}", earlier.join("\n")));
+    }
+    parts.push(format!("Student: {message}"));
+    parts.join("\n\n")
+}
+
+fn assistant_prompt(now: &str) -> String {
+    let now: String = now.chars().take(80).collect();
+    format!("You are Locken, a friendly study coach inside a focus app for students. Your replies are read and may be \
+spoken aloud: one to three short sentences, plain words, no lists, markdown, emoji or links.
+It is {now}.
+
+You help the student plan and start focus sessions, answer questions about their schedule (Canvas assignments and \
+habits, given in the facts), and coach them: encourage them when they're stuck, help them pick what to do next, and \
+check in on how a running session is going. Only use the facts given; never invent assignments or due dates. Keep the \
+conversation on their studies, focus and wellbeing; for anything else, steer back kindly in one sentence.
+
+You can suggest one action. The app asks the student to confirm it, so describe it as a suggestion:
+- {{\"type\":\"start_session\",\"goal\":\"Draft the intro of the history essay\",\"minutes\":25}} to start a focus session (5 to 180 minutes; 25 if they don't say). Only when no session is running.
+- {{\"type\":\"complete_step\",\"number\":2}} to tick off step 2 of their focus steps (numbered in the facts), when they say they finished it.
+- {{\"type\":\"check_off_assignment\",\"number\":1}} to mark Canvas assignment 1 (numbered in the facts) done in Locken, when they say they handed it in. Nothing is sent to Canvas.
+- {{\"type\":\"complete_habit\",\"number\":2}} to tick off today's habit 2 (numbered in the facts) when they say they did it.
+- {{\"type\":\"add_note\",\"title\":\"Biology ideas\",\"body\":\"the note's text\"}} to save a note in Locken's Notes, when they ask you to jot something down.
+- {{\"type\":\"open_page\",\"page\":\"analytics\"}} to open a page; \"page\" is one of home, focus, assistant, habits, analytics, notes, settings.
+- {{\"type\":\"pause_session\"}} to pause their running focus session, or {{\"type\":\"resume_session\"}} to resume a paused one. The app makes them wait a moment first; never push them to quit.
+
+You can also answer questions about their day from the facts: focus time, sessions, streaks, habits and assignments. \
+Say the numbers plainly; if a fact isn't given, say you don't have it.
+
+Reply with JSON only, no other text: {{\"say\":\"what you say\",\"action\":null}}, or with one action in place of null.")
+}
+
 fn week_digest_prompt(today: &str) -> String {
     format!("You turn a student's next 7 days of Canvas assignments into a short weekly plan.
 Today is {today}.
@@ -244,7 +315,7 @@ fn client() -> Result<reqwest::Client, String> {
 }
 
 async fn ask(account: &str, system: &str, user: &str, max_tokens: u32) -> Result<String, String> {
-    let key = stored_key(account).ok_or("Add a Claude, ChatGPT or Gemini API key in Settings to use Intelligent Rephrase.")?;
+    let key = stored_key(account).ok_or("Add a Claude, ChatGPT or Gemini API key in Settings to use AI features.")?;
     let provider = Provider::detect(&key).ok_or("That doesn't look like a Claude (sk-ant-…), ChatGPT (sk-…) or Gemini (Google AI Studio) key.")?;
     let user = scrub(user);
     let client = client()?;
@@ -485,6 +556,15 @@ mod tests {
         assert_eq!(Provider::detect("AIzaSyA0123456789012345678901"), Some(Provider::Gemini));
         assert_eq!(Provider::detect("short"), None);
         assert_eq!(Provider::detect("has a space in it but long enough"), None);
+    }
+
+    #[test]
+    fn assistant_message_keeps_the_last_turns() {
+        let history: Vec<Turn> = (0..12).map(|i| Turn { role: if i % 2 == 0 { "student".into() } else { "assistant".into() }, text: format!("line {i}") }).collect();
+        let text = assistant_message("1. Habit: Read", &history, "what next?");
+        assert!(text.starts_with("Facts:\n1. Habit: Read"));
+        assert!(!text.contains("line 3\n") && text.contains("Student: line 4") && text.contains("Locken: line 11"));
+        assert!(text.ends_with("Student: what next?"));
     }
 
     #[test]

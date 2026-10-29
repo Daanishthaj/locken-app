@@ -1,9 +1,9 @@
 {
-  "build" : 58,
+  "build" : 59,
   "downloadUrl" : "https:\/\/locken-app.vercel.app\/",
   "maintenanceMode" : false,
-  "notes" : "Home has a new 3D orb: a slowly turning wireframe globe in your tab's colours, in place of the plasma ring.",
-  "sha256" : "2e44d8d34e218273b24f569873324722ab9d10a425e9bf83e346e26461b495b6",
-  "signature" : "9z\/41IspMt9ZnLnHQ7oyxkc6b7xZM+42vdBXqMRZs4Br2v3SpF6ISauykYMFwf0pXmKM79Lu0sxKohQpRkgxCQ==",
+  "notes" : "The Assistant can speak in one of four ElevenLabs voices: pick one in Settings with your own ElevenLabs key. Sign-in also has a quiet bot check from Cloudflare that most people never see.",
+  "sha256" : "d89c170a8ca9a077296a1ca63668d998cb631013dc8c520c40f5ab12f1071a60",
+  "signature" : "76m9AxOLnrIx1DQJFPPekDOr\/0xtCtZZOKAN3c0vZYjxe4+nHpmqLgujJdYL4RquchOYq3ztBjefN+y7lbJvDg==",
   "version" : "2.0.8"
 }

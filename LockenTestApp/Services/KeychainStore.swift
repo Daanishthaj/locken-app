@@ -117,7 +117,8 @@ enum AccountScope {
     }
 
     /// Deletes this Mac's files and settings for an account (when the account itself is deleted).
-    /// Keychain items are removed by their owners first (`CanvasAPIManager.unlink`, `AITaskFormatter.removeAPIKey`).
+    /// Keychain items are removed by their owners first (`CanvasAPIManager.unlink`, `AITaskFormatter.removeAPIKey`,
+    /// `ElevenLabsVoice.removeKey`).
     /// Every per-account file (in Application Support/LockenTestApp, as "<name>-<user id>.json") and setting.
     /// Delete Account erases all of them, and Download My Data exports all of them.
     static let perAccountFiles = ["habits", "milestones", "notes", "stats", "screen-usage", "session", AssistantHistoryStore.fileName]
@@ -125,7 +126,7 @@ enum AccountScope {
         ["nowPlayingListenSeconds", "nowPlayingFocusListenSeconds", "canvas.linkMethod", "canvas.host", "canvas.checkedOff",
          "profile.displayName", "blocker.userBlocked", "blocker.userAllowed", AgeGate.agreedKey,
          "feedback.firstSeen", "feedback.nextAsk", "feedback.done", WorkspaceLineup.keyBase,
-         AgeGate.monthKey, AgeGate.yearKey, AppleNotesService.connectedKey]
+         AgeGate.monthKey, AgeGate.yearKey, AppleNotesService.connectedKey, ElevenLabsVoice.selectionKeyBase]
     }
 
     private static var dataFolder: URL? {
@@ -183,7 +184,7 @@ enum AccountScope {
                 return copy
             } ?? ["note": "Locken's servers couldn't be reached, so this copy has only what's on this Mac. Try again online, or email daanu.focus@gmail.com for your server data (profile, feedback and account-change record)."],
             "onThisMac": onThisMac,
-            "notIncluded": "Sign-in session, Canvas token or feed link and AI key: secrets stay in this Mac's Keychain.",
+            "notIncluded": "Sign-in session, Canvas token or feed link, AI key and ElevenLabs key: secrets stay in this Mac's Keychain.",
         ]
         guard JSONSerialization.isValidJSONObject(export) else { return nil }
         return try? JSONSerialization.data(withJSONObject: export, options: [.prettyPrinted, .sortedKeys])

@@ -654,6 +654,9 @@ struct AdminUsersPage: View {
                     if !user.confirmed {
                         Text("unconfirmed").font(.appFont(size: 9, weight: .bold)).foregroundColor(AdminTheme.muted)
                     }
+                    if user.banned {
+                        Text("banned").font(.appFont(size: 9, weight: .bold)).foregroundColor(AdminTheme.red)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 Text(AdminFormat.provider(user.provider)).frame(width: 58, alignment: .leading)
@@ -689,6 +692,10 @@ struct AdminUserDetail: View {
     let liveBuild: Int?
     let close: () -> Void
 
+    @State private var confirmingBan = false
+    @State private var working = false
+    @State private var banError: String?
+
     var body: some View {
         AdminPanel(title: user.email, subtitle: user.isAdmin ? "Admin account" : AdminFormat.provider(user.provider) + " account",
                    trailing: {
@@ -719,7 +726,36 @@ struct AdminUserDetail: View {
                          valueColor: (user.usage?.mfa ?? false) ? AdminTheme.green : .white)
                 AdminDivider()
                 AdminRow(label: "Account ID", value: String(user.id.prefix(8)) + "…")
+                if !user.isAdmin {
+                    AdminDivider()
+                    AdminRow(label: "Status", value: user.banned ? "Banned" : "Active", valueColor: user.banned ? AdminTheme.red : .white)
+                    Button(working ? "Saving…" : (user.banned ? "Unban account" : "Ban account")) {
+                        if user.banned { setBan(false) } else { confirmingBan = true }
+                    }
+                    .buttonStyle(.plain)
+                    .quietAction()
+                    .disabled(working)
+                    .padding(.top, 10)
+                    if let banError {
+                        Text(banError).font(.appFont(size: 11)).foregroundColor(AdminTheme.amber).padding(.top, 4)
+                    }
+                }
             }
+        }
+        .confirmationDialog("Ban \(user.email)?", isPresented: $confirmingBan) {
+            Button("Ban account", role: .destructive) { setBan(true) }
+        } message: {
+            Text("They're signed out everywhere and can't sign in again until you unban them. Their data stays.")
+        }
+    }
+
+    private func setBan(_ banned: Bool) {
+        working = true
+        banError = nil
+        Task {
+            banError = await AuthManager.shared.adminSetBan(userID: user.id, banned: banned)
+            if banError == nil { await AdminManager.shared.refresh(silent: true) }
+            working = false
         }
     }
 

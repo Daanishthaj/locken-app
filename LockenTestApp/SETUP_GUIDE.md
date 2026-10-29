@@ -4,7 +4,7 @@
 
 1. **Open Project**
    ```bash
-   open "LockenTestApp/KissaFocus.xcodeproj"
+   open "/Users/daanu/Desktop/Jarvis-HQ/Kissa focus/LockenTestApp/KissaFocus.xcodeproj"
    ```
 
 2. **Select Target & Destination**

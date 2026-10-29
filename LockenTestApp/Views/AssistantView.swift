@@ -12,6 +12,7 @@ struct AssistantView: View {
     @ObservedObject private var assistant = VoiceAssistant.shared
     @ObservedObject private var state = TestAppStateManager.shared
     @ObservedObject private var ai = AITaskFormatter.shared
+    @ObservedObject private var elevenLabs = ElevenLabsVoice.shared
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var typed = ""
     @State private var optionMonitor: Any?
@@ -333,6 +334,16 @@ struct AssistantView: View {
     }
 
     @ViewBuilder private var voiceRow: some View {
+        if elevenLabs.activeVoiceID != nil {
+            Text("Speaking with \(elevenLabs.selectedName) from ElevenLabs: each reply is sent to ElevenLabs as text to turn into speech. What you say is turned into text on this Mac; only that text goes to your AI provider. Change it in Settings.")
+                .font(.appFont(size: 11))
+                .foregroundColor(.white.opacity(0.6))
+        } else {
+            localVoiceRow
+        }
+    }
+
+    @ViewBuilder private var localVoiceRow: some View {
         switch assistant.voiceState {
         case .ready:
             Text("Locken's voice runs on this Mac. What you say is turned into text on this Mac too; only that text goes to your AI provider.")

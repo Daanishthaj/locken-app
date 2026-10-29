@@ -45,7 +45,7 @@ create table if not exists public.admins (
 alter table public.admins enable row level security;
 revoke all on public.admins from anon, authenticated;
 insert into public.admins (user_id)
-select id from auth.users where email in ('admin@example.com') -- replace with your own admin account emails before running
+select id from auth.users where email in ('talk2daanish@gmail.com', 'mr.tryhard66@gmail.com', 'daanu.focus@gmail.com')
 on conflict do nothing;
 
 -- Recent audit entries for the admin view; callable only by the server.

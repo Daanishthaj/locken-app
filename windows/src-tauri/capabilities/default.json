@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main",
-  "description": "The main window: events, its own focus, bringing itself back and closing for good (the quit countdown), sign-in storage, the blocker, opening the check-in, now playing and play/pause for the profile card, the Windows account name, the student's own AI key and Intelligent Rephrase, linking Canvas and loading its assignments, the tray timer's text, opening Locken's own web pages (Terms, Privacy), Supabase's Google sign-in page in the browser and Windows' notification settings (for Do Not Disturb), and receiving the locken:// link back from Google sign-in.",
+  "description": "The main window: events, its own focus, bringing itself back and closing for good (the quit countdown), sign-in storage, the blocker, opening the check-in, now playing and play/pause for the profile card, the Windows account name, the student's own AI key, Intelligent Rephrase and the Assistant, the student's own ElevenLabs key and its voices, linking Canvas and loading its assignments, the tray timer's text, opening Locken's own web pages (Terms, Privacy), Supabase's Google sign-in page in the browser and Windows' notification settings (for Do Not Disturb), and receiving the locken:// link back from Google sign-in.",
   "windows": [
     "main"
   ],
@@ -28,6 +28,12 @@
     "allow-ai-rephrase",
     "allow-ai-milestones",
     "allow-ai-week-digest",
+    "allow-ai-assistant",
+    "allow-voice-key-status",
+    "allow-voice-save-key",
+    "allow-voice-list",
+    "allow-voice-remove-key",
+    "allow-voice-speech",
     "allow-canvas-status",
     "allow-canvas-link-token",
     "allow-canvas-link-feed",

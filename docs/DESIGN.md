@@ -6,7 +6,7 @@ Read this before any UI work on the Locken apps or website. It follows the ranki
 2. **A, a design file:** the tokens and system in section 2.
 3. **B, screenshot a site:** references in section 3.
 4. **C, design skills:** section 4.
-5. **D, switch styles:** last, and only when the maintainer asks.
+5. **D, switch styles:** last, and only when Mohammed Sir asks.
 
 ## 1. The rules prompt (paste at the top of every design chat)
 
@@ -52,7 +52,7 @@ What I don't like about it now: [your own tells for this task]
 Reference: [attach a screenshot or name a site]
 ```
 
-### Tells the maintainer has already called out
+### Tells Mohammed Sir has already called out
 
 Each of these came up while building Locken and has been fixed. Keep them fixed.
 
@@ -125,4 +125,4 @@ Save reference screenshots in `docs/design-references/` with a one-line note of 
 
 ## 5. Switching styles
 
-Lowest priority. Don't swap Locken to a different preset style (brutalist, minimal, neon) to "freshen it up". Only change the overall style when the maintainer asks for it.
+Lowest priority. Don't swap Locken to a different preset style (brutalist, minimal, neon) to "freshen it up". Only change the overall style when Mohammed Sir asks for it.

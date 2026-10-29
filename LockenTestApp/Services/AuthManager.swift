@@ -338,6 +338,16 @@ final class AuthManager: ObservableObject {
         return (status, json)
     }
 
+    /// Bans (refuses sign-in and ends every session) or unbans an account through admin-overview, which checks on the
+    /// server that the caller is an admin and the target isn't. Returns nil on success, or a message to show.
+    func adminSetBan(userID: String, banned: Bool) async -> String? {
+        guard let (json, status) = try? await authorizedRequest(
+            "/functions/v1/admin-overview", body: ["action": banned ? "ban" : "unban", "userId": userID]
+        ) else { return "Couldn't reach the server. Try again." }
+        if status == 200 { return nil }
+        return status == 403 ? "This account isn't an admin." : (json["error"] as? String ?? "Couldn't change that account. Try again.")
+    }
+
     private func authorizedRequest(_ path: String, body: [String: Any]?, method: String? = nil) async throws -> ([String: Any], Int) {
         guard let token = accessToken else { throw AuthError.message("Sign in again to continue.") }
         var result = try await request(path, body: body, bearer: token, method: method)
@@ -386,6 +396,7 @@ final class AuthManager: ObservableObject {
         AssistantHistoryStore.shared.deactivate()
         CanvasAPIManager.shared.unlink()
         AITaskFormatter.shared.removeAPIKey()
+        ElevenLabsVoice.shared.removeKey()
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         AccountScope.eraseLocalData(for: user.id)
 

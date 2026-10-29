@@ -861,6 +861,15 @@ final class VoiceAssistant: ObservableObject {
     private func speak(_ text: String) {
         guard !text.isEmpty else { phase = .idle; return }
         phase = .speaking
+        if let voiceID = ElevenLabsVoice.shared.activeVoiceID {
+            speakTask = Task { await self.playElevenLabs(text, voiceID: voiceID) }
+            return
+        }
+        speakLocally(text)
+    }
+
+    /// Locken's own voice (Kokoro), or the Mac's built-in voice until Kokoro's files are downloaded.
+    private func speakLocally(_ text: String) {
         guard voiceState == .ready else {
             speakWithMacVoice(text)
             return
@@ -907,6 +916,39 @@ final class VoiceAssistant: ObservableObject {
             if pending == 0, phase == .speaking { phase = .idle }
         } catch {
             if phase == .speaking { speakWithMacVoice(text) }
+        }
+    }
+
+    /// The student's ElevenLabs clone. Every sentence is requested at once and played in order, so the next one is ready
+    /// while the current one plays. If the first sentence fails, Locken's own voice says the whole reply instead.
+    private func playElevenLabs(_ text: String, voiceID: String) async {
+        let voice = ElevenLabsVoice.shared
+        let requests = Self.sentences(in: text).map { sentence in Task { try await voice.speech(sentence, voiceID: voiceID) } }
+        defer { requests.forEach { $0.cancel() } }
+        var pending = 0
+        var finished = false
+        var started = false
+        do {
+            if !playerEngine.isRunning { try playerEngine.start() }
+            player.play()
+            for (index, request) in requests.enumerated() {
+                let buffer = try await request.value
+                if Task.isCancelled { break }
+                if index > 0, let gap = Self.pause(seconds: 0.22) { player.scheduleBuffer(gap, completionHandler: nil) }
+                pending += 1
+                started = true
+                player.scheduleBuffer(buffer) { [weak self] in
+                    Task { @MainActor in
+                        pending -= 1
+                        if finished, pending == 0, self?.phase == .speaking { self?.phase = .idle }
+                    }
+                }
+            }
+            finished = true
+            if pending == 0, phase == .speaking { phase = .idle }
+        } catch {
+            guard phase == .speaking, !Task.isCancelled else { return }
+            if started { phase = .idle } else { speakLocally(text) }
         }
     }
 
@@ -1315,6 +1357,182 @@ final class VoiceAssistant: ObservableObject {
         assert(confirmation(in: "Yes") == true && confirmation(in: "sure, do it") == true && confirmation(in: "okay start it") == true)
         assert(confirmation(in: "no") == false && confirmation(in: "not now") == false && confirmation(in: "please don't") == false)
         assert(confirmation(in: "what's due tomorrow") == nil && confirmation(in: "yes but first tell me about my biology homework") == nil)
+    }
+    #endif
+}
+
+// MARK: - ElevenLabs voices
+
+/// The Assistant's optional ElevenLabs voices (clones made for Locken). They speak only with an ElevenLabs API key the
+/// student pastes in Settings; the key stays in this Mac's Keychain, per account, and only the reply text Locken is about
+/// to say goes to ElevenLabs. With no key, or if ElevenLabs fails, Locken's own voice speaks instead.
+@MainActor
+final class ElevenLabsVoice: ObservableObject {
+    static let shared = ElevenLabsVoice()
+
+    /// The clones, in picker order. A clone belongs to the ElevenLabs account that made it, so it speaks only with that
+    /// account's key; any other key gets "voice not found" and Locken's own voice takes over.
+    static let cloneIDs = ["6i4Eb1eUSagmAhMPqhYS", "rFtEb2MlDt7EXDbMtvop", "jQsSjEc5AqgeKVNnZAUe", "igSE0ESt9o1f4gv4QCL2"]
+    /// The picker's name for Locken's own voice (Kokoro, on this Mac).
+    static let lockenVoiceName = "Locken"
+
+    enum VoiceError: LocalizedError {
+        case badKey, rejectedKey, unavailable
+        var errorDescription: String? {
+            switch self {
+            case .badKey: return "That doesn't look like an ElevenLabs API key."
+            case .rejectedKey: return "ElevenLabs didn't accept that key. Check it in your ElevenLabs profile and try again."
+            case .unavailable: return "Couldn't reach ElevenLabs right now. Locken's own voice will speak until it's back."
+            }
+        }
+    }
+
+    @Published private(set) var hasKey = false
+    /// Names ElevenLabs gives the clones, looked up once a key is saved (not secret, so kept in UserDefaults).
+    @Published private(set) var names: [String: String]
+    /// The picked clone; nil is Locken's own voice.
+    @Published var selectedID: String? {
+        didSet { UserDefaults.standard.set(selectedID, forKey: Self.selectionKeyBase + AccountScope.suffix) }
+    }
+
+    private static let keychainService = "com.locken.LockenTestApp.elevenlabs"
+    private static let keychainAccountBase = "apiKey"
+    private static var keychainAccount: String { keychainAccountBase + AccountScope.suffix }
+    /// Per account (listed in `AccountScope.perAccountDefaultsKeys`).
+    static let selectionKeyBase = "assistant.elevenLabsVoice"
+    private static let namesKey = "assistant.elevenLabsVoiceNames"
+    private static let api = URL(string: "https://api.elevenlabs.io/v1")!
+
+    private init() {
+        names = UserDefaults.standard.dictionary(forKey: Self.namesKey) as? [String: String] ?? [:]
+        activateAccount()
+        #if DEBUG
+        Self.selfCheck()
+        #endif
+    }
+
+    /// Loads the signed-in account's key and pick.
+    func activateAccount() {
+        hasKey = KeychainStore.get(service: Self.keychainService, account: Self.keychainAccount) != nil
+        selectedID = UserDefaults.standard.string(forKey: Self.selectionKeyBase + AccountScope.suffix).flatMap { Self.cloneIDs.contains($0) ? $0 : nil }
+    }
+
+    /// The clone to speak with right now, or nil for Locken's own voice.
+    var activeVoiceID: String? { hasKey ? selectedID : nil }
+
+    /// Picker labels, Locken's own voice first. Names are made unique so each label picks one voice.
+    var choiceNames: [String] { Self.labels(for: Self.cloneIDs, names: names) }
+
+    func select(name: String) {
+        let labels = choiceNames
+        guard let index = labels.firstIndex(of: name) else { return }
+        selectedID = index == 0 ? nil : Self.cloneIDs[index - 1]
+    }
+
+    var selectedName: String {
+        let labels = choiceNames
+        guard let id = selectedID, let index = Self.cloneIDs.firstIndex(of: id) else { return labels[0] }
+        return labels[index + 1]
+    }
+
+    nonisolated static func labels(for ids: [String], names: [String: String]) -> [String] {
+        var labels = [lockenVoiceName]
+        for (index, id) in ids.enumerated() {
+            let base = names[id].map { String($0.prefix(24)) } ?? "Voice \(index + 1)"
+            var label = base
+            var copy = 2
+            while labels.contains(label) { label = "\(base) \(copy)"; copy += 1 }
+            labels.append(label)
+        }
+        return labels
+    }
+
+    // MARK: Key
+
+    /// Checks the key with ElevenLabs (by looking up the clones' names), then saves it. Returns how many clones this
+    /// key can speak with.
+    @discardableResult
+    func saveKey(_ rawKey: String) async throws -> Int {
+        let key = rawKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard (20...200).contains(key.count), key.allSatisfy({ $0.isASCII && !$0.isWhitespace }) else { throw VoiceError.badKey }
+        var found: [String: String] = [:]
+        for id in Self.cloneIDs {
+            switch try await name(of: id, key: key) {
+            case .name(let name): found[id] = name
+            case .notFound: continue
+            case .rejected: throw VoiceError.rejectedKey
+            }
+        }
+        KeychainStore.set(key, service: Self.keychainService, account: Self.keychainAccount)
+        hasKey = true
+        names.merge(found) { _, new in new }
+        UserDefaults.standard.set(names, forKey: Self.namesKey)
+        return found.count
+    }
+
+    func removeKey() {
+        KeychainStore.delete(service: Self.keychainService, account: Self.keychainAccount)
+        hasKey = false
+    }
+
+    private enum Lookup { case name(String), notFound, rejected }
+
+    private func name(of voiceID: String, key: String) async throws -> Lookup {
+        var request = URLRequest(url: Self.api.appendingPathComponent("voices").appendingPathComponent(voiceID), timeoutInterval: 15)
+        request.setValue(key, forHTTPHeaderField: "xi-api-key")
+        let (data, response): (Data, URLResponse)
+        do { (data, response) = try await SecureNetwork.session.data(for: request) } catch { throw VoiceError.unavailable }
+        switch (response as? HTTPURLResponse)?.statusCode ?? 0 {
+        case 200:
+            let name = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["name"] as? String
+            return name.map { .name($0.trimmingCharacters(in: .whitespacesAndNewlines)) } ?? .notFound
+        case 401: return .rejected
+        case 400, 403, 404, 422: return .notFound
+        default: throw VoiceError.unavailable
+        }
+    }
+
+    // MARK: Speech
+
+    /// One piece of a reply as speech in Kokoro's format (24 kHz mono float), ready for the Assistant's player.
+    func speech(_ text: String, voiceID: String) async throws -> AVAudioPCMBuffer {
+        guard let key = KeychainStore.get(service: Self.keychainService, account: Self.keychainAccount) else { throw VoiceError.rejectedKey }
+        var components = URLComponents(url: Self.api.appendingPathComponent("text-to-speech").appendingPathComponent(voiceID), resolvingAgainstBaseURL: false)!
+        components.queryItems = [URLQueryItem(name: "output_format", value: "pcm_24000")]
+        var request = URLRequest(url: components.url!, timeoutInterval: 20)
+        request.httpMethod = "POST"
+        request.setValue(key, forHTTPHeaderField: "xi-api-key")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        // Flash: ElevenLabs' fastest model, so a reply starts about as quickly as Locken's own voice.
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["text": String(text.prefix(1000)), "model_id": "eleven_flash_v2_5"])
+        let (data, response) = try await SecureNetwork.session.data(for: request)
+        guard (response as? HTTPURLResponse)?.statusCode == 200, let buffer = Self.buffer(fromPCM16: data) else { throw VoiceError.unavailable }
+        return buffer
+    }
+
+    /// Raw 16-bit little-endian mono PCM (what `pcm_24000` returns) as a float buffer in `KokoroEngine.audioFormat`.
+    nonisolated static func buffer(fromPCM16 data: Data) -> AVAudioPCMBuffer? {
+        let frames = data.count / 2
+        guard frames > 0, let buffer = AVAudioPCMBuffer(pcmFormat: KokoroEngine.audioFormat, frameCapacity: AVAudioFrameCount(frames)),
+              let out = buffer.floatChannelData?[0] else { return nil }
+        data.withUnsafeBytes { raw in
+            for i in 0..<frames {
+                out[i] = Float(Int16(littleEndian: raw.loadUnaligned(fromByteOffset: i * 2, as: Int16.self))) / 32768
+            }
+        }
+        buffer.frameLength = AVAudioFrameCount(frames)
+        return buffer
+    }
+
+    #if DEBUG
+    private static func selfCheck() {
+        let pcm = Data([0x00, 0x00, 0xFF, 0x7F, 0x00, 0x80, 0x00])  // 0, max, min, and a stray odd byte
+        let samples = buffer(fromPCM16: pcm)
+        assert(samples?.frameLength == 3)
+        assert(samples?.floatChannelData?[0][0] == 0 && samples?.floatChannelData?[0][2] == -1)
+        assert(buffer(fromPCM16: Data()) == nil)
+        assert(labels(for: ["a", "b"], names: [:]) == ["Locken", "Voice 1", "Voice 2"])
+        assert(labels(for: ["a", "b", "c"], names: ["a": "Locken", "b": "Mo", "c": "Mo"]) == ["Locken", "Locken 2", "Mo", "Mo 2"])
     }
     #endif
 }

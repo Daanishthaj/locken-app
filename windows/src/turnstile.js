@@ -3,7 +3,7 @@
 // Off until TURNSTILE_SITE_KEY is set: captchaToken() then returns null and nothing changes.
 // The widget is invisible unless Cloudflare asks the person to click; each token is used once.
 
-export const TURNSTILE_SITE_KEY = '';
+export const TURNSTILE_SITE_KEY = '0x4AAAAAAFo_JiXIrKghT2dE';
 
 let widgetId = null;
 let pending = null;

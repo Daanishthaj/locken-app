@@ -12,6 +12,7 @@ export default defineConfig({
       '@tauri-apps/plugin-deep-link': mock('deep-link.js'),
     },
   },
+  worker: { format: 'es' },
   plugins: [{ name: 'preview-entry', transformIndexHtml: { order: 'pre', handler: (html) => html.replace('/src/main.js', '/preview/entry.js') } }],
   build: { outDir: 'dist-preview', emptyOutDir: true, target: 'es2022', rollupOptions: { input: { main: 'index.html', checkin: 'checkin.html' } } },
 });

@@ -25,3 +25,7 @@ reason = "Linux-only D-Bus dependency (keyring, Tauri); not in the Windows build
 [[IgnoredVulns]]
 id = "RUSTSEC-2026-0372" # zvariant_derive
 reason = "Linux-only D-Bus dependency (keyring, Tauri); not in the Windows build"
+
+[[IgnoredVulns]]
+id = "GHSA-qwgh-2vcv-g2f7" # block-buffer 0.10.4 (via sha2/digest 0.10): fixed only in 0.12.1, which nothing here can use yet
+reason = "Needs a panic caught inside a hash callback; the release build sets panic = \"abort\", so a panic ends the app and the buffer is never reused"
